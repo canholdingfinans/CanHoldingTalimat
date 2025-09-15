@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Havale/EFT Talimat Otomasyonu</title>
+    <!-- Bootstrap CSS with fallback -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom mb-4">
+        <div class="container-fluid d-flex flex-wrap align-items-center">
+            <span class="navbar-brand mb-0 h1 flex-shrink-0">Havale/EFT Talimat Sistemi</span>
+            
+            <!-- Instruction Type Dropdown Menu (Center) -->
+            <div class="dropdown talimat-menu flex-grow-1 d-flex justify-content-center order-lg-2">
+                <button class="btn btn-primary dropdown-toggle talimat-menu-btn" type="button" id="talimatMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-cog"></i> Talimat Türü
+                </button>
+                <ul class="dropdown-menu talimat-dropdown" aria-labelledby="talimatMenuDropdown">
+                    <!-- Havale/EFT Talimatları -->
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-university text-primary"></i> Havale/EFT Talimatları
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-talimat-type="havale-ic">İç Transfer</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="havale-dis">Dış Transfer</a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Vergi Ödemeleri -->
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-receipt text-success"></i> Vergi Ödemeleri
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-talimat-type="vergi-kdv1">KDV-1</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="vergi-kdv2">KDV-2 - Tevkifat</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="vergi-muhtasar-hizmet">Muhtasar Hizmet</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="vergi-muhtasar-ucret">Muhtasar Ücret</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="vergi-kurum-gecici">Kurumlar Geçici</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="vergi-damga">Damga Vergisi</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="vergi-gekap">Gekap</a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- SGK Ödemeleri -->
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-shield text-info"></i> SGK Ödemeleri
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-talimat-type="sgk-prim">SGK Primi</a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Gümrük Ödemeleri -->
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-truck text-warning"></i> Gümrük Ödemeleri
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-talimat-type="gumruk-vergi">Gümrük Vergisi</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="gumruk-otv">ÖTV Ödemesi</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="gumruk-harc">İthalat Harcı</a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Cari Hesap Ödemeleri -->
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-exchange-alt text-secondary"></i> Cari Hesap Ödemeleri
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-talimat-type="cari-satici">Satıcı Ödemesi</a></li>
+                            <li><a class="dropdown-item" href="#" data-talimat-type="cari-musteri">Müşteri Ödemesi</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Archive Button (New) -->
+            <div class="navbar-middle order-lg-2 flex-shrink-0 mx-3">
+                <a href="arsiv.html" class="btn btn-secondary" id="arsivBtn">
+                    <i class="fas fa-archive"></i> Talimat Arşivi
+                </a>
+            </div>
+            
+            <!-- Instruction Type Display (Right) -->
+            <div class="navbar-right order-lg-3 flex-shrink-0">
+                <div id="selectedInstructionDisplay" class="instruction-type-display">
+                    <div class="instruction-badge">
+                        <i class="fas fa-university instruction-icon"></i>
+                        <div class="instruction-text">
+                            <span class="instruction-category">Havale/EFT</span>
+                            <span class="instruction-type">İç Transfer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sol Sütun -->
+            <div class="col-md-4 border-end">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Grup Firmalar</h4>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#firmaModal" id="addFirmaBtn">Firma Ekle</button>
+                </div>
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="firmaSearch" placeholder="Firma Ara...">
+                </div>
+                <div class="mb-3">
+                    <select class="form-select" id="firmaTypeFilter">
+                        <option value="all">Tüm Firmalar</option>
+                        <option value="grup">Grup</option>
+                        <option value="satıcı">Satıcı</option>
+                        <option value="müşteri">Müşteri</option>
+                    </select>
+                </div>
+                <div class="accordion" id="firmaAccordion">
+                    <!-- Firma ve banka listesi buraya dinamik olarak eklenecek -->
+                </div>
+            </div>
+            <!-- Sağ Sütun -->
+            <div class="col-md-8">
+                <h4>Talimat Formu</h4>
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle"></i> Lütfen yukarıdaki <strong>"Talimat Türü"</strong> butonundan işlem yapmak istediğiniz talimat türünü seçiniz.
+                </div>
+
+
+                
+                <!-- Dynamic Form Fields Container -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div id="dynamicFormFields" class="dynamic-form-container" tabindex="-1">
+                            <!-- Dynamic fields will be injected here based on instruction type -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>Oluşturulan Talimat</h4>
+                        <div id="talimatCikti" class="border p-3">
+                            <!-- Talimat çıktısı buraya gelecek -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firma Ekle/Düzenle Modal -->
+    <div class="modal fade" id="firmaModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="firmaModalLabel">Firma Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="firmaForm">
+                        <input type="hidden" id="firmaId" name="firmaId">
+                        <div class="mb-3">
+                            <label for="firmaAdi" class="form-label">Firma Adı</label>
+                            <input type="text" class="form-control" id="firmaAdi" name="firmaAdi" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="firmaVknTc" class="form-label">Firma VKN/T.C. No (Opsiyonel)</label>
+                            <input type="text" class="form-control" id="firmaVknTc" name="firmaVknTc" placeholder="10 veya 11 haneli vergi numarası" maxlength="11">
+                            <div class="form-text">10 haneli Vergi Kimlik Numarası veya 11 haneli T.C. Kimlik Numarası</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="firmaVergiDairesi" class="form-label">Firma Vergi Dairesi (Opsiyonel)</label>
+                            <input type="text" class="form-control" id="firmaVergiDairesi" name="firmaVergiDairesi" placeholder="Vergi dairesi adı">
+                        </div>
+                        <div class="mb-3">
+                            <label for="firmaSGKSicilNo" class="form-label">SGK Sicil Numarası (Opsiyonel)</label>
+                            <input type="text" class="form-control" id="firmaSGKSicilNo" name="firmaSGKSicilNo" placeholder="SGK sicil numarası">
+                        </div>
+                        <div class="mb-3">
+                            <label for="firmaSGKAdi" class="form-label">SGK Adı (Opsiyonel)</label>
+                            <input type="text" class="form-control" id="firmaSGKAdi" name="firmaSGKAdi" placeholder="SGK adı">
+                        </div>
+                        <div class="mb-3">
+                            <label for="firmaTuru" class="form-label">Firma Türü</label>
+                            <select class="form-select" id="firmaTuru" name="firmaTuru" required>
+                                <option value="">Seçiniz...</option>
+                                <option value="grup">Grup</option>
+                                <option value="satıcı">Satıcı</option>
+                                <option value="müşteri">Müşteri</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banka Ekle/Düzenle Modal -->
+    <div class="modal fade" id="bankaModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bankaModalLabel">Banka Hesabı Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bankaForm">
+                        <input type="hidden" id="bankaId" name="bankaId">
+                        <input type="hidden" id="bankaFirmaId" name="bankaFirmaId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="bankaAdi" class="form-label">Banka Adı</label>
+                                <input type="text" class="form-control" id="bankaAdi" name="bankaAdi" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="subeAdi" class="form-label">Şube Adı</label>
+                                <input type="text" class="form-control" id="subeAdi" name="subeAdi" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="subeIl" class="form-label">İl</label>
+                                <input type="text" class="form-control" id="subeIl" name="subeIl" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="paraBirimi" class="form-label">Para Birimi</label>
+                                <select class="form-select" id="paraBirimi" name="paraBirimi" required>
+                                    <option value="">Seçiniz...</option>
+                                    <option value="TRY">TRY</option>
+                                    <option value="EUR">EURO</option>
+                                    <option value="USD">USD</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="CHF">CHF</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="iban" class="form-label">IBAN</label>
+                            <input type="text" class="form-control" id="iban" name="iban" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="swiftKodu" class="form-label">SWIFT Kodu (Opsiyonel)</label>
+                            <input type="text" class="form-control" id="swiftKodu" name="swiftKodu" placeholder="Örn: TCZBTR2A" maxlength="11" pattern="[A-Z0-9]{8}|[A-Z0-9]{11}" title="SWIFT kodu sadece 8 veya 11 haneli olabilir ve sadece büyük harf ile rakam içerebilir">
+                            <div class="form-text">Dış transfer işlemlerinde kullanılır. Sadece 8 veya 11 haneli olabilir.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="hesapNo" class="form-label">Hesap Numarası (Opsiyonel)</label>
+                            <input type="text" class="form-control" id="hesapNo" name="hesapNo">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS with fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
+            crossorigin="anonymous"></script>
+    <!-- Supabase JS with fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

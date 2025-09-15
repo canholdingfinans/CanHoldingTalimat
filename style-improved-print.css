@@ -1,0 +1,1067 @@
+/* =================================================================
+   IMPROVED PRINT STYLES - RELIABLE SINGLE PAGE APPROACH
+   ================================================================= */
+
+@media print {
+    @page {
+        size: A4;
+        margin: 0.4in; /* Increased from 0.05in to ensure safe printable area */
+    }
+    
+    /* Hide non-essential UI elements using display: none */
+    .navbar,
+    .btn,
+    .no-print,
+    .card-header,
+    .instruction-type-display,
+    .talimat-menu,
+    #firmaSearch,
+    #firmaTypeFilter,
+    #addFirmaBtn,
+    #firmaAccordion,
+    .modal,
+    .dropdown,
+    .alert {
+        display: none !important;
+    }
+    
+    /* Reset body and main container for printing */
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        font-size: 9pt !important;
+        line-height: 1.2 !important;
+    }
+    
+    .container-fluid {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .row {
+        margin: 0 !important;
+    }
+    
+    .col-md-4,
+    .col-md-8 {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Main content area - remove absolute positioning */
+    #talimatCikti {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 5pt !important;
+        background: white !important;
+        color: black !important;
+        font-size: 9pt !important;
+        border: none !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+    }
+    
+    /* Talimat container - optimized for print */
+    .talimat-container {
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 3pt !important;
+        border: none !important;
+        background: white !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+        font-size: 8pt !important;
+    }
+    
+    /* Headers and content - Optimized for readability */
+    .talimat-header {
+        border-bottom: 0.5pt solid black !important;
+        margin-bottom: 2pt !important;
+        padding-bottom: 1pt !important;
+        font-size: 10pt !important;
+    }
+    
+    .talimat-title {
+        font-size: 12pt !important;
+        margin: 2pt 0 !important;
+        text-align: center !important;
+        line-height: 1.1 !important;
+        font-weight: bold !important;
+    }
+    
+    .talimat-addressee {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+        line-height: 1.1 !important;
+    }
+    
+    .talimat-metin {
+        font-size: 8pt !important;
+        margin: 2pt 0 !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Tables */
+    .talimat-table,
+    .multi-payment-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 2pt 0 !important;
+        font-size: 9pt !important; /* Increased from 8pt for better readability */
+    }
+    
+    .talimat-table th,
+    .talimat-table td,
+    .multi-payment-table th,
+    .multi-payment-table td {
+        border: 0.5pt solid black !important;
+        padding: 2pt !important; /* Increased from 1pt for better spacing */
+        font-size: 9pt !important; /* Increased from 8pt */
+        line-height: 1.3 !important; /* Increased from 1.1 for better text wrapping */
+        vertical-align: top !important;
+    }
+    
+    .talimat-table th,
+    .multi-payment-table th {
+        background: none !important; /* Removed background-color as it doesn't print well */
+        font-weight: bold !important;
+        font-size: 9pt !important; /* Increased from 8pt */
+        border-bottom: 1pt solid black !important; /* Added thicker bottom border for visual separation */
+    }
+    
+    /* Multi-payment specific optimizations */
+    .multi-payment .talimat-header {
+        margin-bottom: 3pt !important;
+        padding-bottom: 2pt !important;
+        font-size: 10pt !important;
+    }
+    
+    .multi-payment .talimat-title {
+        font-size: 12pt !important;
+        margin: 3pt 0 !important;
+    }
+    
+    .multi-payment .talimat-addressee {
+        font-size: 10pt !important;
+        margin: 2pt 0 !important;
+    }
+    
+    .multi-payment .talimat-metin {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+        line-height: 1.2 !important;
+    }
+    
+    .multi-payment .talimat-container {
+        padding: 4pt !important;
+    }
+    
+    /* Multi-payment table optimizations */
+    .multi-payment .multi-payment-table {
+        font-size: 9pt !important; /* Increased from 8pt */
+        margin: 2pt 0 !important; /* Increased from 1pt */
+    }
+    
+    .multi-payment .multi-payment-table th {
+        font-size: 9pt !important; /* Increased from 7pt */
+        padding: 2pt !important; /* Increased from 1pt */
+        line-height: 1.3 !important; /* Increased from 1.1 */
+        background: none !important; /* Removed background color */
+        border-bottom: 1pt solid black !important; /* Added thicker bottom border */
+    }
+    
+    .multi-payment .multi-payment-table td {
+        font-size: 9pt !important; /* Increased from 7pt */
+        padding: 2pt !important; /* Increased from 1pt */
+        line-height: 1.3 !important; /* Increased from 1.1 */
+        min-height: 14pt !important; /* Added minimum height to ensure space for wrapped text */
+    }
+    
+    /* Dense mode for 6+ payments */
+    .multi-payment.dense .talimat-container {
+        padding: 3pt !important; /* Increased from 2pt */
+        font-size: 8pt !important; /* Increased from 7pt */
+    }
+    
+    .multi-payment.dense .talimat-header {
+        margin-bottom: 2pt !important; /* Increased from 1pt */
+        padding-bottom: 2pt !important; /* Increased from 1pt */
+        font-size: 8pt !important; /* Unchanged */
+    }
+    
+    .multi-payment.dense .talimat-title {
+        font-size: 10pt !important; /* Unchanged */
+        margin: 2pt 0 !important; /* Increased from 1pt */
+    }
+    
+    .multi-payment.dense .talimat-metin {
+        font-size: 8pt !important; /* Increased from 7pt */
+        margin: 2pt 0 !important; /* Increased from 1pt */
+    }
+    
+    .multi-payment.dense .multi-payment-table {
+        font-size: 8pt !important; /* Increased from 7pt */
+        margin: 2pt 0 !important; /* Increased from 0.5pt */
+    }
+    
+    .multi-payment.dense .multi-payment-table th,
+    .multi-payment.dense .multi-payment-table td {
+        font-size: 7pt !important; /* Increased from 6pt */
+        padding: 2pt !important; /* Increased from 0.5pt */
+        line-height: 1.2 !important; /* Increased from 1.0 */
+    }
+    
+    /* Replace ultra-dense mode with a modified dense mode */
+    .multi-payment.eight-payment-special .talimat-container,
+    .multi-payment.ultra-dense .talimat-container {
+        padding: 3pt !important; /* Increased from 0.5pt */
+        font-size: 7pt !important; /* Increased from 5.5pt */
+    }
+
+    .multi-payment.eight-payment-special .talimat-header,
+    .multi-payment.ultra-dense .talimat-header {
+        margin-bottom: 2pt !important; /* Increased from 0.5pt */
+        padding-bottom: 1pt !important; /* Increased from 0.2pt */
+        font-size: 7pt !important; /* Increased from 6pt */
+    }
+
+    .multi-payment.eight-payment-special .talimat-title,
+    .multi-payment.ultra-dense .talimat-title {
+        font-size: 9pt !important; /* Increased from 8pt */
+        margin: 2pt 0 !important; /* Increased from 1pt */
+    }
+
+    .multi-payment.eight-payment-special .talimat-metin,
+    .multi-payment.ultra-dense .talimat-metin {
+        font-size: 7pt !important; /* Increased from 5.5pt */
+        margin: 2pt 0 !important; /* Increased from 0.5pt */
+    }
+
+    .multi-payment.eight-payment-special .multi-payment-table,
+    .multi-payment.ultra-dense .multi-payment-table {
+        font-size: 7pt !important; /* Increased from 5pt */
+        margin: 2pt 0 !important; /* Increased from 0.2pt */
+    }
+
+    .multi-payment.eight-payment-special .multi-payment-table th,
+    .multi-payment.eight-payment-special .multi-payment-table td,
+    .multi-payment.ultra-dense .multi-payment-table th,
+    .multi-payment.ultra-dense .multi-payment-table td {
+        font-size: 7pt !important; /* Increased from 4.5pt */
+        padding: 2pt !important; /* Increased from 0.2pt */
+        line-height: 1.2 !important; /* Increased from 0.9 */
+    }
+    
+    /* Footer optimizations */
+    .talimat-footer {
+        margin-top: 8pt !important; /* Increased from 5pt */
+        font-size: 8pt !important; /* Increased from 7pt */
+    }
+    
+    .multi-payment .talimat-footer {
+        margin-top: 3pt !important; /* Increased from 1pt */
+        font-size: 7pt !important; /* Increased from 5pt */
+    }
+
+    .multi-payment.eight-payment-special .talimat-footer,
+    .multi-payment.ultra-dense .talimat-footer {
+        margin-top: 3pt !important; /* Increased from 0.5pt */
+        font-size: 7pt !important; /* Increased from 4.5pt */
+    }
+    
+    /* Page break control - only apply to top-level containers and table rows */
+    .talimat-container {
+        page-break-inside: avoid !important;
+    }
+    
+    /* Allow table rows to break across pages if needed */
+    .multi-payment-table tr {
+        page-break-inside: auto !important;
+    }
+    
+    /* Ensure proper text wrapping */
+    .multi-payment-table .company-name,
+    .multi-payment-table .bank-name,
+    .multi-payment-table .description-cell {
+        word-wrap: break-word !important;
+        white-space: normal !important;
+        min-height: 14pt !important; /* Ensure enough height for wrapped text */
+    }
+}
+/* ================================================================
+   IMPROVED PRINT STYLES - BALANCED VERSION
+   ================================================================ */
+
+@media print {
+    @page {
+        size: A4;
+        margin: 0.5in; /* güvenli yazıcı payı */
+    }
+
+    /* Gereksiz UI öğelerini gizle */
+    .navbar,
+    .btn,
+    .no-print,
+    .card-header,
+    .instruction-type-display,
+    .talimat-menu,
+    #firmaSearch,
+    #firmaTypeFilter,
+    #addFirmaBtn,
+    #firmaAccordion,
+    .modal,
+    .dropdown,
+    .alert {
+        display: none !important;
+    }
+
+    /* Genel gövde */
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        font-size: 9pt !important;
+        line-height: 1.3 !important;
+        color: black !important;
+    }
+
+    .container-fluid,
+    .row,
+    .col-md-4,
+    .col-md-8 {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Talimat alanı */
+    #talimatCikti {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 7pt !important;
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+    }
+
+    .talimat-container {
+        margin: 0 0 8pt 0 !important;
+        padding: 6pt !important;
+        border: none !important;
+        background: white !important;
+        font-size: 9pt !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* Başlıklar */
+    .talimat-header {
+        border-bottom: 1pt solid black !important;
+        margin-bottom: 4pt !important;
+        padding-bottom: 2pt !important;
+        font-size: 10pt !important;
+        font-weight: bold !important;
+    }
+
+    .talimat-title {
+        font-size: 12pt !important;
+        margin: 4pt 0 !important;
+        text-align: center !important;
+        font-weight: bold !important;
+    }
+
+    .talimat-addressee {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+    }
+
+    .talimat-metin {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Tablo */
+    .talimat-table,
+    .multi-payment-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 4pt 0 !important;
+        font-size: 8pt !important;
+    }
+
+    .talimat-table th,
+    .talimat-table td,
+    .multi-payment-table th,
+    .multi-payment-table td {
+        border: 0.75pt solid black !important;
+        padding: 2pt 3pt !important;
+        vertical-align: top !important;
+        line-height: 1.2 !important;
+        word-wrap: break-word !important;
+        white-space: normal !important;
+    }
+
+    .talimat-table th,
+    .multi-payment-table th {
+        background: none !important; /* Yazıcı dostu */
+        font-weight: bold !important;
+        font-size: 8.5pt !important;
+        border-bottom: 1.25pt solid black !important;
+    }
+
+    /* Multi-payment */
+    .multi-payment .talimat-container {
+        padding: 6pt !important;
+        font-size: 8pt !important;
+    }
+
+    .multi-payment .talimat-header {
+        font-size: 9pt !important;
+    }
+
+    .multi-payment .talimat-title {
+        font-size: 11pt !important;
+    }
+
+    .multi-payment .multi-payment-table th,
+    .multi-payment .multi-payment-table td {
+        font-size: 7.5pt !important;
+        padding: 1.5pt 2pt !important;
+    }
+
+    /* Dense mode */
+    .multi-payment.dense .talimat-container {
+        font-size: 7pt !important;
+        padding: 4pt !important;
+    }
+
+    .multi-payment.dense .multi-payment-table th,
+    .multi-payment.dense .multi-payment-table td {
+        font-size: 7pt !important;
+        padding: 1pt !important;
+    }
+
+    /* Footer */
+    .talimat-footer {
+        margin-top: 6pt !important;
+        font-size: 7pt !important;
+        text-align: right !important;
+    }
+}
+
+/* ================================================================
+   PRINT STYLES - FIXED VERSION
+   ================================================================ */
+
+@media print {
+    @page {
+        size: A4;
+        margin: 0.5in; /* güvenli yazıcı payı */
+    }
+
+    /* Gereksiz UI öğelerini gizle */
+    .navbar,
+    .btn,
+    .no-print,
+    .card-header,
+    .instruction-type-display,
+    .talimat-menu,
+    #firmaSearch,
+    #firmaTypeFilter,
+    #addFirmaBtn,
+    #firmaAccordion,
+    .modal,
+    .dropdown,
+    .alert {
+        display: none !important;
+    }
+
+    /* Genel gövde */
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        font-size: 9pt !important;
+        line-height: 1.3 !important;
+        color: black !important;
+    }
+
+    .container-fluid,
+    .row,
+    .col-md-4,
+    .col-md-8 {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Talimat alanı */
+    #talimatCikti {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 7pt !important;
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        page-break-before: auto !important; /* boş sayfa engellendi */
+        page-break-inside: avoid !important;
+    }
+
+    /* İlk talimat kesinlikle ilk sayfada başlasın */
+    .talimat-container:first-child {
+        margin-top: 0 !important;
+        page-break-before: avoid !important;
+    }
+
+    .talimat-container {
+        margin: 0 0 8pt 0 !important;
+        padding: 6pt !important;
+        border: none !important;
+        background: white !important;
+        font-size: 9pt !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* Başlıklar */
+    .talimat-header {
+        border-bottom: 1pt solid black !important;
+        margin-bottom: 4pt !important;
+        padding-bottom: 2pt !important;
+        font-size: 10pt !important;
+        font-weight: bold !important;
+    }
+
+    .talimat-title {
+        font-size: 12pt !important;
+        margin: 4pt 0 !important;
+        text-align: center !important;
+        font-weight: bold !important;
+    }
+
+    .talimat-addressee {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+    }
+
+    .talimat-metin {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Tablo */
+    .talimat-table,
+    .multi-payment-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 4pt 0 !important;
+        font-size: 8pt !important;
+    }
+
+    .talimat-table th,
+    .talimat-table td,
+    .multi-payment-table th,
+    .multi-payment-table td {
+        border: 0.75pt solid black !important;
+        padding: 2pt 3pt !important;
+        vertical-align: top !important;
+        line-height: 1.2 !important;
+
+        /* Hücre içeriği tam görünsün */
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow: visible !important;
+    }
+
+    .talimat-table th,
+    .multi-payment-table th {
+        background: none !important; /* Yazıcı dostu */
+        font-weight: bold !important;
+        font-size: 8.5pt !important;
+        border-bottom: 1.25pt solid black !important;
+    }
+
+    /* Multi-payment */
+    .multi-payment .talimat-container {
+        padding: 6pt !important;
+        font-size: 8pt !important;
+    }
+
+    .multi-payment .talimat-header {
+        font-size: 9pt !important;
+    }
+
+    .multi-payment .talimat-title {
+        font-size: 11pt !important;
+    }
+
+    .multi-payment .multi-payment-table th,
+    .multi-payment .multi-payment-table td {
+        font-size: 7.5pt !important;
+        padding: 1.5pt 2pt !important;
+    }
+
+    /* Dense mode */
+    .multi-payment.dense .talimat-container {
+        font-size: 7pt !important;
+        padding: 4pt !important;
+    }
+
+    .multi-payment.dense .multi-payment-table th,
+    .multi-payment.dense .multi-payment-table td {
+        font-size: 7pt !important;
+        padding: 1pt !important;
+    }
+
+    /* Footer */
+    .talimat-footer {
+        margin-top: 6pt !important;
+        font-size: 7pt !important;
+        text-align: right !important;
+    }
+}
+
+/* ================================================================
+   PRINT STYLES - FINAL VERSION (with Ünvan & Açıklama fix)
+   ================================================================ */
+
+@media print {
+    @page {
+        size: A4;
+        margin: 0.4in;
+    }
+
+    .navbar,
+    .btn,
+    .no-print,
+    .card-header,
+    .instruction-type-display,
+    .talimat-menu,
+    #firmaSearch,
+    #firmaTypeFilter,
+    #addFirmaBtn,
+    #firmaAccordion,
+    .modal,
+    .dropdown,
+    .alert {
+        display: none !important;
+    }
+
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        font-size: 9pt !important;
+        line-height: 1.3 !important;
+        color: black !important;
+    }
+
+    .container-fluid,
+    .row,
+    .col-md-4,
+    .col-md-8 {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #talimatCikti {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 7pt !important;
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        page-break-before: auto !important;
+        page-break-inside: avoid !important;
+    }
+
+    .talimat-container:first-child {
+        margin-top: 0 !important;
+        page-break-before: avoid !important;
+    }
+
+    .talimat-container {
+        margin: 0 0 8pt 0 !important;
+        padding: 6pt !important;
+        background: white !important;
+        font-size: 9pt !important;
+        page-break-inside: avoid !important;
+    }
+
+    .talimat-header {
+        border-bottom: 1pt solid black !important;
+        margin-bottom: 4pt !important;
+        padding-bottom: 2pt !important;
+        font-size: 10pt !important;
+        font-weight: bold !important;
+    }
+
+    .talimat-title {
+        font-size: 12pt !important;
+        margin: 4pt 0 !important;
+        text-align: center !important;
+        font-weight: bold !important;
+    }
+
+    .talimat-addressee {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+    }
+
+    .talimat-metin {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+        line-height: 1.3 !important;
+    }
+
+    /* =======================
+       TABLE FIX
+       ======================= */
+    .talimat-table,
+    .multi-payment-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 4pt 0 !important;
+        font-size: 8pt !important;
+        table-layout: fixed !important; /* sütun genişlikleri kontrol */
+    }
+
+    .talimat-table th,
+    .talimat-table td,
+    .multi-payment-table th,
+    .multi-payment-table td {
+        border: 0.75pt solid black !important;
+        padding: 3pt 4pt !important;
+        vertical-align: top !important;
+        line-height: 1.3 !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow: visible !important;
+    }
+
+    .talimat-table th,
+    .multi-payment-table th {
+        background: none !important;
+        font-weight: bold !important;
+        font-size: 8.5pt !important;
+        border-bottom: 1.25pt solid black !important;
+    }
+
+    /* Ünvan & Açıklama genişlikleri */
+    .multi-payment-table th.company-name,
+    .multi-payment-table td.company-name {
+        width: 25% !important;
+        font-size: 8.5pt !important;
+    }
+
+    .multi-payment-table th.description-cell,
+    .multi-payment-table td.description-cell {
+        width: 35% !important;
+        font-size: 8.5pt !important;
+    }
+
+    /* Multi-payment */
+    .multi-payment .talimat-container {
+        padding: 6pt !important;
+        font-size: 8pt !important;
+    }
+
+    .multi-payment .talimat-header {
+        font-size: 9pt !important;
+    }
+
+    .multi-payment .talimat-title {
+        font-size: 11pt !important;
+    }
+
+    .multi-payment .multi-payment-table th,
+    .multi-payment .multi-payment-table td {
+        font-size: 7.5pt !important;
+        padding: 2pt 3pt !important;
+    }
+
+    /* Dense mode */
+    .multi-payment.dense .talimat-container {
+        font-size: 7pt !important;
+        padding: 4pt !important;
+    }
+
+    .multi-payment.dense .multi-payment-table th,
+    .multi-payment.dense .multi-payment-table td {
+        font-size: 7pt !important;
+        padding: 1.5pt !important;
+    }
+
+    .talimat-footer {
+        margin-top: 6pt !important;
+        font-size: 7pt !important;
+        text-align: right !important;
+    }
+}
+
+/* ================================================================
+   PRINT STYLES - GELİŞTİRİLMİŞ VERSİYON (Ünvan & Açıklama düzeltmesi)
+   ================================================================ */
+
+@media print {
+    @page {
+        size: A4;
+        margin: 0.4in; /* Marjinleri biraz azalttık */
+    }
+
+    .navbar,
+    .btn,
+    .no-print,
+    .card-header,
+    .instruction-type-display,
+    .talimat-menu,
+    #firmaSearch,
+    #firmaTypeFilter,
+    #addFirmaBtn,
+    #firmaAccordion,
+    .modal,
+    .dropdown,
+    .alert {
+        display: none !important;
+    }
+
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        font-size: 9pt !important;
+        line-height: 1.2 !important; /* Satır aralığını azalttık */
+        color: black !important;
+    }
+
+    .container-fluid,
+    .row,
+    .col-md-4,
+    .col-md-8 {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #talimatCikti {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 6pt !important; /* Padding azaltıldı */
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        page-break-before: auto !important;
+        page-break-inside: avoid !important;
+    }
+
+    .talimat-container:first-child {
+        margin-top: 0 !important;
+        page-break-before: avoid !important;
+    }
+
+    .talimat-container {
+        margin: 0 0 6pt 0 !important; /* Margin azaltıldı */
+        padding: 4pt !important; /* Padding azaltıldı */
+        background: white !important;
+        font-size: 9pt !important;
+        page-break-inside: avoid !important;
+        page-break-before: auto !important;
+    }
+
+    .talimat-header {
+        border-bottom: 1pt solid black !important;
+        margin-bottom: 3pt !important; /* Azaltıldı */
+        padding-bottom: 1pt !important; /* Azaltıldı */
+        font-size: 10pt !important;
+        font-weight: bold !important;
+    }
+
+    .talimat-title {
+        font-size: 11pt !important; /* Biraz küçültüldü */
+        margin: 3pt 0 !important; /* Azaltıldı */
+        text-align: center !important;
+        font-weight: bold !important;
+    }
+
+    .talimat-addressee {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+    }
+
+    .talimat-metin {
+        font-size: 9pt !important;
+        margin: 2pt 0 !important;
+        line-height: 1.2 !important;
+    }
+
+    /* =======================
+       GELİŞTİRİLMİŞ TABLO DÜZENLEMESİ
+       ======================= */
+    .talimat-table,
+    .multi-payment-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 3pt 0 !important; /* Azaltıldı */
+        font-size: 8pt !important;
+        table-layout: fixed !important;
+    }
+
+    .talimat-table th,
+    .talimat-table td,
+    .multi-payment-table th,
+    .multi-payment-table td {
+        border: 0.5pt solid black !important; /* Border inceldi */
+        padding: 2pt 3pt !important; /* Padding azaltıldı */
+        vertical-align: top !important;
+        line-height: 1.2 !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow: visible !important;
+        hyphens: auto !important; /* Otomatik tire ekleme */
+        word-break: break-word !important; /* Uzun kelimeleri böl */
+    }
+
+    .talimat-table th,
+    .multi-payment-table th {
+        background: none !important;
+        font-weight: bold !important;
+        font-size: 8pt !important; /* Azaltıldı */
+        border-bottom: 1pt solid black !important;
+        height: auto !important;
+        min-height: 12pt !important;
+    }
+
+    /* SÜTUN GENİŞLİKLERİ OPTİMİZE EDİLDİ */
+    .multi-payment-table th.company-name,
+    .multi-payment-table td.company-name {
+        width: 32% !important; /* Daha fazla genişletildi */
+        font-size: 10pt !important; /* 2pt artırıldı */
+        max-width: 32% !important;
+    }
+
+    .multi-payment-table th.description-cell,
+    .multi-payment-table td.description-cell {
+        width: 44% !important; /* Daha fazla genişletildi */
+        font-size: 10pt !important; /* 2pt artırıldı */
+        max-width: 44% !important;
+    }
+
+    /* Diğer sütunlar için genişlik */
+    .multi-payment-table th:not(.company-name):not(.description-cell),
+    .multi-payment-table td:not(.company-name):not(.description-cell) {
+        font-size: 7.5pt !important;
+        text-align: center !important;
+    }
+
+    /* Sıra numarası sütunu */
+    .multi-payment-table th:first-child,
+    .multi-payment-table td:first-child {
+        width: 2% !important; /* Daraltıldı */
+    }
+
+    /* IBAN sütunu */
+    .multi-payment-table th:nth-child(4),
+    .multi-payment-table td:nth-child(4) {
+        width: 33% !important; /* Genişletildi */
+    }
+
+    /* Multi-payment düzenlemesi */
+    .multi-payment .talimat-container {
+        padding: 4pt !important; /* Azaltıldı */
+        font-size: 8pt !important;
+        margin-bottom: 4pt !important; /* Azaltıldı */
+        page-break-inside: avoid !important;
+    }
+
+    .multi-payment .talimat-header {
+        font-size: 9pt !important;
+        margin-bottom: 2pt !important;
+    }
+
+    .multi-payment .talimat-title {
+        font-size: 10pt !important; /* Azaltıldı */
+        margin: 2pt 0 !important;
+    }
+
+    .multi-payment .multi-payment-table th,
+    .multi-payment .multi-payment-table td {
+        font-size: 7.5pt !important;
+        padding: 1.5pt 2pt !important; /* Daha az padding */
+        line-height: 1.1 !important;
+    }
+
+    /* Dense mode - daha kompakt */
+    .multi-payment.dense .talimat-container {
+        font-size: 7pt !important;
+        padding: 3pt !important;
+        margin-bottom: 3pt !important;
+    }
+
+    .multi-payment.dense .talimat-header {
+        font-size: 8pt !important;
+        margin-bottom: 1pt !important;
+    }
+
+    .multi-payment.dense .talimat-title {
+        font-size: 9pt !important;
+        margin: 1pt 0 !important;
+    }
+
+    .multi-payment.dense .multi-payment-table th,
+    .multi-payment.dense .multi-payment-table td {
+        font-size: 6.5pt !important;
+        padding: 1pt !important;
+        line-height: 1.1 !important;
+    }
+
+    .talimat-footer {
+        margin-top: 4pt !important; /* Azaltıldı */
+        font-size: 7pt !important;
+        text-align: right !important;
+    }
+
+    /* SAYFA TAŞMASI KONTROLÜ */
+    .multi-payment-table tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Tablo satırlarını daha kompakt yap */
+    .multi-payment-table tbody tr {
+        height: auto !important;
+        min-height: 16pt !important;
+    }
+
+    /* Uzun metinler için özel düzenleme */
+    .company-name,
+    .description-cell {
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        hyphens: auto !important;
+        max-width: 0 !important; /* table-layout: fixed ile çalışır */
+    }
+
+    /* Kompakt görünüm için ekstra ayarlar */
+    .multi-payment.compact .talimat-container {
+        margin-bottom: 2pt !important;
+        padding: 2pt !important;
+    }
+
+    .multi-payment.compact .multi-payment-table {
+        margin: 1pt 0 !important;
+    }
+
+    .multi-payment.compact .multi-payment-table th,
+    .multi-payment.compact .multi-payment-table td {
+        font-size: 6pt !important;
+        padding: 1pt !important;
+        line-height: 1 !important;
+    }
+}

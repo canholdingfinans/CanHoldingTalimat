@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cari Hesap Ödemesi Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Cari Hesap Ödemesi Test</h1>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>Test Instructions</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Open the main application at <a href="/">Main Application</a></li>
+                    <li>Select "Cari Hesap Ödemeleri" from the instruction type menu</li>
+                    <li>Choose either "Satıcı Ödemesi" or "Müşteri Ödemesi"</li>
+                    <li>Verify that the recipient company list is filtered correctly:
+                        <ul>
+                            <li>For "Satıcı Ödemesi", only companies with type "Satıcı" should appear</li>
+                            <li>For "Müşteri Ödemesi", only companies with type "Müşteri" should appear</li>
+                        </ul>
+                    </li>
+                    <li>Fill in the sender information (must be a "Grup" company)</li>
+                    <li>Fill in the recipient information</li>
+                    <li>Click "Yeni Ödeme Ekle" to test multi-payment functionality</li>
+                    <li>Verify that new payment fields are added dynamically</li>
+                    <li>Fill in the payment details</li>
+                    <li>Click "Talimat Oluştur" to create the instruction</li>
+                    <li>Verify that the instruction is created and displayed correctly</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Expected Results</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>Company type filtering should work correctly in the recipient dropdown</li>
+                    <li>Dynamic payment fields should be added when clicking "Yeni Ödeme Ekle"</li>
+                    <li>Each payment field should have its own recipient company and bank account selection</li>
+                    <li>Each payment field should have its own amount and description fields</li>
+                    <li>When creating the instruction, all payments should be processed and saved</li>
+                    <li>The output should display all payments in a clear, organized format</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

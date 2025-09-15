@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talimat Arşivi - Havale/EFT Talimat Sistemi</title>
+    <!-- Bootstrap CSS with fallback -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .instruction-card {
+            transition: transform 0.2s;
+        }
+        .instruction-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            font-size: 0.8em;
+        }
+        .view-toggle {
+            margin-bottom: 20px;
+        }
+        .list-view .instruction-row {
+            border-bottom: 1px solid #dee2e6;
+            padding: 10px 0;
+        }
+        .list-view .instruction-row:last-child {
+            border-bottom: none;
+        }
+        .list-view .instruction-row:hover {
+            background-color: #f8f9fa;
+        }
+        .btn-delete {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-delete:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom mb-4">
+        <div class="container-fluid d-flex flex-wrap align-items-center">
+            <a href="index.html" class="navbar-brand mb-0 h1 flex-shrink-0">Havale/EFT Talimat Sistemi</a>
+            
+            <!-- Archive Button (Active) -->
+            <div class="navbar-middle order-lg-2 flex-shrink-0 mx-3">
+                <a href="arsiv.html" class="btn btn-secondary active" id="arsivBtn">
+                    <i class="fas fa-archive"></i> Talimat Arşivi
+                </a>
+            </div>
+            
+            <!-- Back to Main Button -->
+            <div class="navbar-right order-lg-3 flex-shrink-0">
+                <a href="index.html" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Ana Sayfaya Dön
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-4"><i class="fas fa-archive me-2"></i>Talimat Arşivi</h2>
+                
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="row align-items-end">
+                        <div class="col-md-2 mb-3">
+                            <label for="instructionTypeFilter" class="form-label">Talimat Türü</label>
+                            <select class="form-select" id="instructionTypeFilter">
+                                <option value="all">Tüm Türler</option>
+                                <option value="Havale/EFT">Havale/EFT</option>
+                                <option value="Vergi Ödemesi">Vergi Ödemesi</option>
+                                <option value="SGK Ödemesi">SGK Ödemesi</option>
+                                <option value="Gümrük Ödemesi">Gümrük Ödemesi</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="dateFromFilter" class="form-label">Başlangıç Tarihi</label>
+                            <input type="date" class="form-control" id="dateFromFilter">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="dateToFilter" class="form-label">Bitiş Tarihi</label>
+                            <input type="date" class="form-control" id="dateToFilter">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="sortOrder" class="form-label">Sırala</label>
+                            <select class="form-select" id="sortOrder">
+                                <option value="instruction_number.desc">Talimat Numarası (En Yeni)</option>
+                                <option value="instruction_number.asc">Talimat Numarası (En Eski)</option>
+                                <option value="talimat_tarihi.desc">Talimat Tarihi (En Yeni)</option>
+                                <option value="talimat_tarihi.asc">Talimat Tarihi (En Eski)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex gap-2 h-100 align-items-end">
+                                <button id="clearFilters" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Temizle
+                                </button>
+                                <button id="applyFilters" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Uygula
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- View Toggle -->
+                <div class="view-toggle d-flex justify-content-end mb-3">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" id="cardViewBtn">
+                            <i class="fas fa-th-large"></i> Kart Görünümü
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="listViewBtn">
+                            <i class="fas fa-list"></i> Liste Görünümü
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Instructions List -->
+                <div class="row" id="instructionsContainer">
+                    <!-- Instructions will be loaded here dynamically -->
+                    <div class="col-12 text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Yükleniyor...</span>
+                        </div>
+                        <p class="mt-2">Talimatlar yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detail Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailModalLabel">Talimat Detayı</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Detail content will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Talimatı Sil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bu talimatı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+                    <p id="deleteInstructionInfo"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Sil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
+            crossorigin="anonymous"></script>
+    <!-- Supabase JS with fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
+    
+    <script type="module">
+        // DOM Elements
+        const instructionsContainer = document.getElementById('instructionsContainer');
+        const instructionTypeFilter = document.getElementById('instructionTypeFilter');
+        const dateFromFilter = document.getElementById('dateFromFilter');
+        const dateToFilter = document.getElementById('dateToFilter');
+        const sortOrder = document.getElementById('sortOrder');
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        const clearFiltersBtn = document.getElementById('clearFilters');
+        const detailModalElement = document.getElementById('detailModal');
+        const modalBody = document.getElementById('modalBody');
+        const cardViewBtn = document.getElementById('cardViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const deleteModalElement = document.getElementById('deleteModal');
+        const deleteInstructionInfo = document.getElementById('deleteInstructionInfo');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        
+        // State
+        let allInstructions = [];
+        let filteredInstructions = [];
+        let currentView = 'card'; // 'card' or 'list'
+        let instructionToDelete = null;
+        
+        // Initialize Supabase client
+        const SUPABASE_URL = 'https://fvyjbfesakzhquxrfyvz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2eWpiZmVzYWt6aHF1eHJmeXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDMzMTQsImV4cCI6MjA3MTg3OTMxNH0.q3SVC9tUhYqLwyVZOJkQtfE_gcZ1Xrf2Eq-TuyJsg5A';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Format currency
+        function formatCurrency(amount, currency) {
+            return new Intl.NumberFormat('tr-TR', {
+                style: 'currency',
+                currency: currency || 'TRY'
+            }).format(amount);
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR');
+        }
+        
+        // Toggle view between card and list
+        function toggleView(view) {
+            currentView = view;
+            
+            // Update button states
+            if (view === 'card') {
+                cardViewBtn.classList.add('active');
+                listViewBtn.classList.remove('active');
+                instructionsContainer.classList.remove('list-view');
+            } else {
+                cardViewBtn.classList.remove('active');
+                listViewBtn.classList.add('active');
+                instructionsContainer.classList.add('list-view');
+            }
+            
+            // Re-render instructions with the selected view
+            renderInstructions(filteredInstructions);
+        }
+        
+        // Render instructions list
+        function renderInstructions(instructions) {
+            if (!instructions || instructions.length === 0) {
+                instructionsContainer.innerHTML = `
+                    <div class="col-12 text-center">
+                        <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                        <h4>Kayıtlı talimat bulunamadı</h4>
+                        <p class="text-muted">Filtrelerinizi değiştirerek tekrar deneyin veya yeni talimat oluşturun.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (currentView === 'card') {
+                renderCardView(instructions);
+            } else {
+                renderListView(instructions);
+            }
+        }
+        
+        // Render card view
+        function renderCardView(instructions) {
+            let html = '<div class="row">';
+            instructions.forEach(instruction => {
+                const instructionType = instruction.talimat_turu || 'Belirtilmemiş';
+                const instructionDate = instruction.talimat_tarihi ? formatDate(instruction.talimat_tarihi) : 'Belirtilmemiş';
+                const amount = instruction.tutar ? formatCurrency(instruction.tutar, instruction.para_birimi) : 'Belirtilmemiş';
+                
+                html += `
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card instruction-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">${instructionType}</h6>
+                                    <span class="badge bg-primary status-badge">${instruction.instruction_number || 'N/A'}</span>
+                                </div>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i> ${instructionDate}<br>
+                                        <i class="fas fa-money-bill-wave me-1"></i> ${amount}
+                                    </small>
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary btn-sm detail-btn flex-fill" data-id="${instruction.id}">
+                                        <i class="fas fa-eye me-1"></i> Detay
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${instruction.id}" data-number="${instruction.instruction_number || 'N/A'}" data-type="${instructionType}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            instructionsContainer.innerHTML = html;
+            
+            // Add event listeners to detail and delete buttons
+            document.querySelectorAll('.detail-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const instructionId = this.getAttribute('data-id');
+                    showInstructionDetail(instructionId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const instructionId = this.getAttribute('data-id');
+                    const instructionNumber = this.getAttribute('data-number');
+                    const instructionType = this.getAttribute('data-type');
+                    showDeleteConfirmation(instructionId, instructionNumber, instructionType);
+                });
+            });
+        }
+        
+        // Render list view
+        function renderListView(instructions) {
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Talimat No</th>
+                                <th>Tür</th>
+                                <th>Tarih</th>
+                                <th>Tutar</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            instructions.forEach(instruction => {
+                const instructionType = instruction.talimat_turu || 'Belirtilmemiş';
+                const instructionDate = instruction.talimat_tarihi ? formatDate(instruction.talimat_tarihi) : 'Belirtilmemiş';
+                const amount = instruction.tutar ? formatCurrency(instruction.tutar, instruction.para_birimi) : 'Belirtilmemiş';
+                
+                html += `
+                    <tr class="instruction-row">
+                        <td>${instruction.instruction_number || 'N/A'}</td>
+                        <td>${instructionType}</td>
+                        <td>${instructionDate}</td>
+                        <td>${amount}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-primary btn-sm detail-btn" data-id="${instruction.id}">
+                                    <i class="fas fa-eye"></i> Detay
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${instruction.id}" data-number="${instruction.instruction_number || 'N/A'}" data-type="${instructionType}">
+                                    <i class="fas fa-trash"></i> Sil
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            instructionsContainer.innerHTML = html;
+            
+            // Add event listeners to detail and delete buttons
+            document.querySelectorAll('.detail-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const instructionId = this.getAttribute('data-id');
+                    showInstructionDetail(instructionId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const instructionId = this.getAttribute('data-id');
+                    const instructionNumber = this.getAttribute('data-number');
+                    const instructionType = this.getAttribute('data-type');
+                    showDeleteConfirmation(instructionId, instructionNumber, instructionType);
+                });
+            });
+        }
+        
+        // Show instruction detail in modal
+        function showInstructionDetail(instructionId) {
+            const instruction = allInstructions.find(inst => inst.id == instructionId);
+            if (!instruction) return;
+            
+            let detailHtml = `
+                <div class="row">
+                    <div class="col-12">
+                        <h5>${instruction.talimat_turu || 'Belirtilmemiş'} - #${instruction.instruction_number || 'N/A'}</h5>
+                        <hr>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle me-2"></i>Genel Bilgiler</h6>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Talimat Türü:</strong></td>
+                                    <td>${instruction.talimat_turu || 'Belirtilmemiş'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Talimat Tarihi:</strong></td>
+                                    <td>${instruction.talimat_tarihi ? formatDate(instruction.talimat_tarihi) : 'Belirtilmemiş'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tutar:</strong></td>
+                                    <td>${instruction.tutar ? formatCurrency(instruction.tutar, instruction.para_birimi) : 'Belirtilmemiş'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Para Birimi:</strong></td>
+                                    <td>${instruction.para_birimi || 'Belirtilmemiş'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+            `;
+            
+            // Add sender information
+            if (instruction.gonderici_firma) {
+                detailHtml += `
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-arrow-alt-circle-right me-2"></i>Gönderici</h6>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Firma:</strong></td>
+                                    <td>${instruction.gonderici_firma.name || 'Belirtilmemiş'}</td>
+                                </tr>
+                `;
+                
+                if (instruction.gonderici_banka) {
+                    detailHtml += `
+                                <tr>
+                                    <td><strong>Banka:</strong></td>
+                                    <td>${instruction.gonderici_banka.banka_adi || 'Belirtilmemiş'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Şube:</strong></td>
+                                    <td>${instruction.gonderici_banka.sube_adi || 'Belirtilmemiş'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>IBAN:</strong></td>
+                                    <td>${instruction.gonderici_banka.iban || 'Belirtilmemiş'}</td>
+                                </tr>
+                    `;
+                }
+                
+                detailHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            // Add receiver information
+            if (instruction.alici_firma) {
+                detailHtml += `
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-arrow-alt-circle-left me-2"></i>Alıcı</h6>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Firma:</strong></td>
+                                    <td>${instruction.alici_firma.name || 'Belirtilmemiş'}</td>
+                                </tr>
+                `;
+                
+                if (instruction.alici_banka) {
+                    detailHtml += `
+                                <tr>
+                                    <td><strong>Banka:</strong></td>
+                                    <td>${instruction.alici_banka.banka_adi || 'Belirtilmemiş'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Şube:</strong></td>
+                                    <td>${instruction.alici_banka.sube_adi || 'Belirtilmemiş'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>IBAN:</strong></td>
+                                    <td>${instruction.alici_banka.iban || 'Belirtilmemiş'}</td>
+                                </tr>
+                    `;
+                }
+                
+                detailHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            // Add description
+            if (instruction.aciklama) {
+                detailHtml += `
+                    <div class="col-12 mt-3">
+                        <h6><i class="fas fa-comment me-2"></i>Açıklama</h6>
+                        <p>${instruction.aciklama}</p>
+                    </div>
+                `;
+            }
+            
+            detailHtml += `</div>`;
+            
+            modalBody.innerHTML = detailHtml;
+            const detailModal = new bootstrap.Modal(detailModalElement);
+            detailModal.show();
+        }
+        
+        // Show delete confirmation modal
+        function showDeleteConfirmation(instructionId, instructionNumber, instructionType) {
+            instructionToDelete = instructionId;
+            deleteInstructionInfo.textContent = `Talimat No: ${instructionNumber} (${instructionType})`;
+            const deleteModal = new bootstrap.Modal(deleteModalElement);
+            deleteModal.show();
+        }
+        
+        // Delete instruction
+        async function deleteInstruction() {
+            if (!instructionToDelete) return;
+            
+            try {
+                // Show loading state
+                confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Siliniyor...';
+                confirmDeleteBtn.disabled = true;
+                
+                // Delete instruction from Supabase
+                const { error } = await supabaseClient
+                    .from('payment_instructions')
+                    .delete()
+                    .eq('id', instructionToDelete);
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                // Hide delete modal
+                const deleteModal = bootstrap.Modal.getInstance(deleteModalElement);
+                deleteModal.hide();
+                
+                // Reset delete state
+                instructionToDelete = null;
+                confirmDeleteBtn.textContent = 'Sil';
+                confirmDeleteBtn.disabled = false;
+                
+                // Reload instructions
+                await loadInstructions();
+                
+                // Show success message
+                alert('Talimat başarıyla silindi.');
+            } catch (error) {
+                console.error('Talimat silinirken hata oluştu:', error);
+                alert('Talimat silinirken bir hata oluştu: ' + error.message);
+                
+                // Reset delete state
+                confirmDeleteBtn.textContent = 'Sil';
+                confirmDeleteBtn.disabled = false;
+            }
+        }
+        
+        // Apply filters and sorting
+        function applyFilters() {
+            const typeFilter = instructionTypeFilter.value;
+            const dateFrom = dateFromFilter.value;
+            const dateTo = dateToFilter.value;
+            
+            filteredInstructions = allInstructions.filter(instruction => {
+                // Type filter
+                if (typeFilter !== 'all' && instruction.talimat_turu !== typeFilter) {
+                    return false;
+                }
+                
+                // Date range filter
+                if (dateFrom && instruction.talimat_tarihi) {
+                    const instructionDate = new Date(instruction.talimat_tarihi);
+                    const fromDate = new Date(dateFrom);
+                    if (instructionDate < fromDate) {
+                        return false;
+                    }
+                }
+                
+                if (dateTo && instruction.talimat_tarihi) {
+                    const instructionDate = new Date(instruction.talimat_tarihi);
+                    const toDate = new Date(dateTo);
+                    if (instructionDate > toDate) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            // Apply sorting
+            const sortValue = sortOrder.value;
+            const [sortField, sortDirection] = sortValue.split('.');
+            
+            filteredInstructions.sort((a, b) => {
+                let aValue = a[sortField];
+                let bValue = b[sortField];
+                
+                // Handle date comparison
+                if (sortField === 'talimat_tarihi') {
+                    aValue = aValue ? new Date(aValue) : new Date(0);
+                    bValue = bValue ? new Date(bValue) : new Date(0);
+                }
+                
+                // Handle null/undefined values
+                if (aValue === null || aValue === undefined) return 1;
+                if (bValue === null || bValue === undefined) return -1;
+                
+                // Compare values
+                if (aValue < bValue) {
+                    return sortDirection === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortDirection === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+            
+            renderInstructions(filteredInstructions);
+        }
+        
+        // Clear filters
+        function clearFilters() {
+            instructionTypeFilter.value = 'all';
+            dateFromFilter.value = '';
+            dateToFilter.value = '';
+            sortOrder.value = 'instruction_number.desc';
+            filteredInstructions = [...allInstructions];
+            renderInstructions(filteredInstructions);
+        }
+        
+        // Load instructions from Supabase
+        async function loadInstructions() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('payment_instructions')
+                    .select(`
+                        *,
+                        gonderici_firma:firms!payment_instructions_gonderici_firma_id_fkey(name),
+                        alici_firma:firms!payment_instructions_alici_firma_id_fkey(name),
+                        gonderici_banka:bank_accounts!payment_instructions_gonderici_banka_hesap_id_fkey(banka_adi, sube_adi, iban),
+                        alici_banka:bank_accounts!payment_instructions_alici_banka_hesap_id_fkey(banka_adi, sube_adi, iban)
+                    `)
+                    .order('instruction_number', { ascending: false });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                allInstructions = data;
+                filteredInstructions = [...allInstructions];
+                renderInstructions(filteredInstructions);
+            } catch (error) {
+                console.error('Talimatlar yüklenirken hata oluştu:', error);
+                instructionsContainer.innerHTML = `
+                    <div class="col-12 text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3 text-danger"></i>
+                        <h4>Hata Oluştu</h4>
+                        <p class="text-danger">Talimatlar yüklenirken bir hata oluştu: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Event Listeners
+        applyFiltersBtn.addEventListener('click', applyFilters);
+        clearFiltersBtn.addEventListener('click', clearFilters);
+        cardViewBtn.addEventListener('click', () => toggleView('card'));
+        listViewBtn.addEventListener('click', () => toggleView('list'));
+        sortOrder.addEventListener('change', applyFilters);
+        confirmDeleteBtn.addEventListener('click', deleteInstruction);
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInstructions();
+        });
+    </script>
+</body>
+</html>

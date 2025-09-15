@@ -1,0 +1,519 @@
+/* =================================================================
+   NAVIGATION MENU STYLES
+   ================================================================= */
+
+.navbar {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  color: #2c3e50 !important;
+  font-size: 1.5rem;
+}
+
+.talimat-menu {
+  position: relative;
+}
+
+.talimat-menu-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  position: relative;
+  z-index: 1001;
+}
+
+.talimat-menu-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Main dropdown menu positioning */
+.talimat-dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-top: 0.5rem !important;
+  min-width: 300px !important;
+  z-index: 1000 !important;
+}
+
+/* Dropdown submenu styles */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: 0;
+  border-radius: 0 6px 6px 6px;
+  display: none;
+  min-width: 200px;
+}
+
+.dropdown-submenu:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-submenu > .dropdown-toggle::after {
+  display: inline-block;
+  margin-left: 0.5rem;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: 0.3em solid transparent;
+  border-right: 0;
+  border-bottom: 0.3em solid transparent;
+  border-left: 0.3em solid;
+}
+
+.dropdown-submenu:hover > a::after {
+  border-left-color: #fff;
+}
+
+.dropdown-submenu.pull-left {
+  float: none;
+}
+
+.dropdown-submenu.pull-left .dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+
+/* =================================================================
+   BASIC STYLES
+   ================================================================= */
+
+body {
+  padding-top: 20px;
+  background-color: #e9ecef;
+}
+
+.container-fluid {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+.border-end {
+  border-right: 1px solid #dee2e6 !important;
+  height: 100vh;
+  padding-right: 20px;
+  background-color: #fff;
+}
+
+#talimatCikti {
+  background-color: #f8f9fa;
+  min-height: 200px;
+  font-family: "Times New Roman", Times, serif;
+  color: #000;
+  padding: 2rem;
+}
+
+.talimat-container {
+  border: 1px solid #ccc;
+  padding: 35px;
+  background-color: #fff;
+  width: 21cm;
+  min-height: 29.7cm;
+  margin: auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.talimat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #000;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.talimat-header .logo {
+  font-size: 2rem; /* daha büyük ekran görünümü */
+  font-weight: 800; /* daha belirgin */
+  text-transform: uppercase; /* tamamen büyük harf */
+  letter-spacing: 0.5px;
+}
+
+.talimat-header .header-info {
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+/* Firma logo / gönderici firma adı: büyük puntolu, kalın ve uppercase */
+.firma-logo {
+  font-size: 32px !important; /* istenen büyüklük */
+  font-weight: 800 !important; /* kalın */
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  line-height: 1 !important;
+  display: inline-block;
+}
+
+.talimat-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-decoration: underline;
+  margin: 40px 0;
+}
+
+.talimat-addressee {
+  margin: 30px 0;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.talimat-body p {
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.talimat-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+.talimat-table th,
+.talimat-table td {
+  border: 1px solid #000;
+  padding: 10px;
+  font-size: 0.95rem;
+}
+
+.talimat-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  text-align: left;
+  width: 35%;
+}
+
+.talimat-footer {
+  margin-top: 50px;
+  overflow: hidden;
+}
+
+/* =================================================================
+   MULTI-PAYMENT TABLE STYLES
+   ================================================================= */
+
+.multi-payment {
+  font-size: 14px;
+}
+
+.multi-payment-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.multi-payment-table {
+  width: 100%;
+  margin-bottom: 0;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+
+.multi-payment-table th,
+.multi-payment-table td {
+  padding: 6px 4px;
+  vertical-align: middle;
+  border: 1px solid #dee2e6;
+  word-wrap: break-word;
+}
+
+.multi-payment-table th {
+  background-color: #e3f2fd;
+  font-weight: 600;
+  text-align: center;
+  font-size: 11px;
+}
+
+.multi-payment-table .iban-cell {
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  word-break: break-all;
+  line-height: 1;
+  padding: 2px 1px !important;
+  max-height: 20px;
+  overflow: hidden;
+}
+
+.multi-payment-table .swift-cell {
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  text-align: center;
+  padding: 2px 1px !important;
+  line-height: 1;
+}
+
+.multi-payment-table .amount-cell {
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 2px 2px !important;
+  line-height: 1;
+}
+
+.multi-payment-table .company-name {
+  font-size: 10px;
+  line-height: 1;
+  padding: 2px 1px !important;
+  max-height: 25px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multi-payment-table .bank-name {
+  font-size: 10px;
+  line-height: 1;
+  padding: 2px 1px !important;
+  max-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multi-payment-table .description-cell {
+  font-size: 9px;
+  line-height: 1;
+  padding: 2px 1px !important;
+  max-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =================================================================
+   PRINT STYLES - ULTRA SIMPLE APPROACH
+   ================================================================= */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0.5in;
+  }
+
+  .navbar,
+  .btn,
+  .no-print,
+  .card-header,
+  .instruction-type-display,
+  .talimat-menu,
+  #firmaSearch,
+  #firmaTypeFilter,
+  #addFirmaBtn,
+  #firmaAccordion,
+  .modal,
+  .dropdown,
+  .alert {
+    display: none !important;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
+    color: black !important;
+  }
+
+  .container-fluid,
+  .row,
+  .col-md-4,
+  .col-md-8 {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #talimatCikti {
+    width: 100% !important;
+    margin: 0 !important;
+    /* add extra top padding so the content doesn't stick to the very top when printed */
+    padding: 20pt 8pt 8pt 8pt !important;
+    background: white !important;
+    border: none !important;
+    box-shadow: none !important;
+    page-break-before: auto !important;
+    page-break-inside: avoid !important;
+  }
+
+  .talimat-container:first-child {
+    margin-top: 0 !important;
+    page-break-before: avoid !important;
+  }
+
+  .talimat-container {
+    margin: 0 0 8pt 0 !important;
+    padding: 6pt !important;
+    background: white !important;
+    font-size: 9pt !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Extra top padding so printed talimat doesn't start too close to the page edge */
+  .talimat-container {
+    padding-top: 12pt !important;
+  }
+
+  /* increase vertical spacing between sections for better printed appearance */
+  .talimat-header {
+    border-bottom: 1pt solid black !important;
+    margin-bottom: 8pt !important; /* more breathing room */
+    padding-bottom: 6pt !important; /* separate header from the rest */
+    font-size: 50pt !important;
+    font-weight: bold !important;
+  }
+
+  /* Make the company name at the very top clearly prominent in print */
+  .talimat-header .logo {
+    text-transform: uppercase !important;
+    font-size: 32pt !important; /* büyük punto yazdırma için */
+    font-weight: 800 !important;
+    letter-spacing: 0.75pt !important;
+  }
+
+  /* Reserved, non-visual spacer for logo area: keeps vertical space
+    for a letterhead when printing but intentionally hides any logo
+    imagery so the print looks clean and consistent. */
+  .talimat-letterhead {
+    /* ensure the letterhead area always occupies space even when no
+     visible logo is present */
+    display: block !important;
+    min-height: 48pt !important; /* reserve vertical space */
+    margin-bottom: 8pt !important;
+    /* center content if present while remaining unobtrusive */
+    text-align: left !important;
+  }
+
+  /* keep a fixed-size element for spacing but hide visuals; using
+    visibility:hidden preserves layout space without drawing content */
+  .talimat-letterhead .print-logo {
+    display: inline-block !important;
+    width: 60pt !important;
+    height: 36pt !important;
+    visibility: hidden !important;
+    background: none !important;
+    border: none !important;
+    flex: 0 0 auto !important;
+  }
+
+  .talimat-title {
+    font-size: 12pt !important;
+    margin: 8pt 0 !important; /* larger gap above/below title */
+    text-align: center !important;
+    font-weight: bold !important;
+  }
+
+  .talimat-addressee {
+    font-size: 9pt !important;
+    margin: 6pt 0 !important; /* increased spacing */
+  }
+
+  .talimat-metin {
+    font-size: 9pt !important;
+    margin: 6pt 0 !important; /* increased paragraph spacing */
+    line-height: 1.35 !important;
+    font-size: 9pt !important;
+  }
+
+  /* =======================
+       TABLE FIX
+       ======================= */
+  .talimat-table,
+  .multi-payment-table {
+    margin-top: 10pt !important; /* tabloyu metinden aşağı alır */
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 8pt 0 !important; /* more space above/below tables */
+    font-size: 8pt !important;
+    table-layout: fixed !important; /* sütun genişlikleri kontrol */
+  }
+
+  .talimat-table th,
+  .talimat-table td,
+  .multi-payment-table th,
+  .multi-payment-table td {
+    border: 0.75pt solid black !important;
+    padding: 3pt 4pt !important;
+    vertical-align: top !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow: visible !important;
+  }
+
+  .talimat-table th,
+  .multi-payment-table th {
+    background: none !important;
+    font-weight: bold !important;
+    font-size: 8.5pt !important;
+    border-bottom: 1.25pt solid black !important;
+  }
+
+  /* Ünvan & Açıklama genişlikleri */
+  .multi-payment-table th.company-name,
+  .multi-payment-table td.company-name {
+    width: 25% !important;
+    font-size: 8.5pt !important;
+  }
+
+  .multi-payment-table th.description-cell,
+  .multi-payment-table td.description-cell {
+    width: 35% !important;
+    font-size: 8.5pt !important;
+  }
+
+  /* Multi-payment */
+  .multi-payment .talimat-container {
+    padding: 6pt !important;
+    font-size: 8pt !important;
+  }
+
+  .multi-payment .talimat-header {
+    font-size: 9pt !important;
+  }
+
+  .multi-payment .talimat-title {
+    font-size: 11pt !important;
+  }
+
+  .multi-payment .multi-payment-table th,
+  .multi-payment .multi-payment-table td {
+    font-size: 7.5pt !important;
+    padding: 2pt 3pt !important;
+  }
+
+  /* Dense mode */
+  .multi-payment.dense .talimat-container {
+    font-size: 7pt !important;
+    padding: 4pt !important;
+  }
+
+  .multi-payment.dense .multi-payment-table th,
+  .multi-payment.dense .multi-payment-table td {
+    font-size: 7pt !important;
+    padding: 1.5pt !important;
+  }
+
+  .talimat-footer {
+    margin-top: 12pt !important; /* add room before signature/footer */
+    font-size: 7pt !important;
+    text-align: right !important;
+  }
+}
