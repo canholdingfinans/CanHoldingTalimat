@@ -374,30 +374,28 @@ body {
   /* increase vertical spacing between sections for better printed appearance */
   .talimat-header {
     border-bottom: 1pt solid black !important;
-    margin-bottom: 8pt !important; /* more breathing room */
-    padding-bottom: 6pt !important; /* separate header from the rest */
-    font-size: 50pt !important;
-    font-weight: bold !important;
+    margin-bottom: 12pt !important; /* daha dengeli boşluk */
+    padding-bottom: 6pt !important; /* header ayrımı */
+    /* font-size kaldırıldı: konteyner font şişirmesin */
   }
 
-  /* Make the company name at the very top clearly prominent in print */
-  .talimat-header .logo {
+  /* Firma adı / logo alanı: belirgin ama aşırı büyük değil */
+  .talimat-header .logo,
+  .firma-logo {
     text-transform: uppercase !important;
-    font-size: 32pt !important; /* büyük punto yazdırma için */
+    font-size: 20pt !important;
     font-weight: 800 !important;
-    letter-spacing: 0.75pt !important;
+    letter-spacing: 0.6pt !important;
+    line-height: 1.1 !important;
   }
 
   /* Reserved, non-visual spacer for logo area: keeps vertical space
     for a letterhead when printing but intentionally hides any logo
     imagery so the print looks clean and consistent. */
   .talimat-letterhead {
-    /* ensure the letterhead area always occupies space even when no
-     visible logo is present */
     display: block !important;
-    min-height: 48pt !important; /* reserve vertical space */
+    min-height: 36pt !important; /* daha kompakt üst boşluk */
     margin-bottom: 8pt !important;
-    /* center content if present while remaining unobtrusive */
     text-align: left !important;
   }
 
@@ -414,22 +412,23 @@ body {
   }
 
   .talimat-title {
-    font-size: 12pt !important;
-    margin: 8pt 0 !important; /* larger gap above/below title */
+    font-size: 14pt !important;
+    margin: 10pt 0 !important;
     text-align: center !important;
     font-weight: bold !important;
+    text-decoration: underline !important;
   }
 
   .talimat-addressee {
-    font-size: 9pt !important;
-    margin: 6pt 0 !important; /* increased spacing */
+    font-size: 10pt !important;
+    margin: 8pt 0 !important;
+    font-weight: 700 !important;
   }
 
   .talimat-metin {
-    font-size: 9pt !important;
-    margin: 6pt 0 !important; /* increased paragraph spacing */
-    line-height: 1.35 !important;
-    font-size: 9pt !important;
+    font-size: 10pt !important;
+    margin: 8pt 0 !important; /* paragraf boşluğu */
+    line-height: 1.4 !important;
   }
 
   /* =======================
@@ -437,22 +436,21 @@ body {
        ======================= */
   .talimat-table,
   .multi-payment-table {
-    margin-top: 10pt !important; /* tabloyu metinden aşağı alır */
     width: 100% !important;
     border-collapse: collapse !important;
-    margin: 8pt 0 !important; /* more space above/below tables */
-    font-size: 8pt !important;
-    table-layout: fixed !important; /* sütun genişlikleri kontrol */
+    margin: 10pt 0 12pt !important; /* üst-alt boşluk net */
+    font-size: 8.5pt !important;
+    table-layout: fixed !important;
   }
 
   .talimat-table th,
   .talimat-table td,
   .multi-payment-table th,
   .multi-payment-table td {
-    border: 0.75pt solid black !important;
+    border: 0.6pt solid black !important;
     padding: 3pt 4pt !important;
     vertical-align: top !important;
-    line-height: 1.3 !important;
+    line-height: 1.25 !important;
     white-space: normal !important;
     word-wrap: break-word !important;
     overflow: visible !important;
@@ -461,9 +459,9 @@ body {
   .talimat-table th,
   .multi-payment-table th {
     background: none !important;
-    font-weight: bold !important;
+    font-weight: 700 !important;
     font-size: 8.5pt !important;
-    border-bottom: 1.25pt solid black !important;
+    border-bottom: 1pt solid black !important;
   }
 
   /* Ünvan & Açıklama genişlikleri */
@@ -490,13 +488,14 @@ body {
   }
 
   .multi-payment .talimat-title {
-    font-size: 11pt !important;
+    font-size: 13pt !important;
   }
 
   .multi-payment .multi-payment-table th,
   .multi-payment .multi-payment-table td {
-    font-size: 7.5pt !important;
+    font-size: 7.8pt !important;
     padding: 2pt 3pt !important;
+    line-height: 1.2 !important;
   }
 
   /* Dense mode */
@@ -512,8 +511,8 @@ body {
   }
 
   .talimat-footer {
-    margin-top: 12pt !important; /* add room before signature/footer */
-    font-size: 7pt !important;
+    margin-top: 16pt !important; /* imza alanı öncesi boşluk */
+    font-size: 8pt !important;
     text-align: right !important;
   }
 }
