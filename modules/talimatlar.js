@@ -195,8 +195,7 @@ export const createHavaleEFTInstruction = async (formData) => {
             throw new Error('Bu talimat daha önce oluşturulmuş. Mükerrer kayıt yapılamaz.');
         }
         
-        // Get next instruction number
-        const nextNumber = await talimatOperations.getNextInstructionNumber();
+        // Removed getNextInstructionNumber as the DB handles it
         
         // Prepare instruction data
         const instructionData = {
@@ -208,8 +207,7 @@ export const createHavaleEFTInstruction = async (formData) => {
             para_birimi: gondericiBanka.para_birimi,
             aciklama: formData.aciklama || '',
             talimat_tarihi: formData.talimatTarihi,
-            talimat_turu: 'Havale/EFT',
-            instruction_number: nextNumber
+            talimat_turu: 'Havale/EFT'
         };
         
         // Create instruction
@@ -277,8 +275,7 @@ export const createCariInstruction = async (formData) => {
             throw new Error('Bu talimat daha önce oluşturulmuş. Mükerrer kayıt yapılamaz.');
         }
         
-        // Get next instruction number
-        const nextNumber = await talimatOperations.getNextInstructionNumber();
+        // Removed getNextInstructionNumber as the DB handles it
         
         // Prepare instruction data
         const instructionData = {
@@ -290,8 +287,7 @@ export const createCariInstruction = async (formData) => {
             para_birimi: gondericiBanka.para_birimi,
             aciklama: formData.aciklama || '',
             talimat_tarihi: formData.talimatTarihi,
-            talimat_turu: 'Cari Hesap Ödemesi',
-            instruction_number: nextNumber
+            talimat_turu: 'Cari Hesap Ödemesi'
         };
         
         // Create instruction
