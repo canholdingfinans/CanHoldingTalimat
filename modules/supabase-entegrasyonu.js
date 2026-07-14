@@ -3,8 +3,8 @@
  * Handles all database operations and API calls
  */
 
-const SUPABASE_URL = 'https://fvyjbfesakzhquxrfyvz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2eWpiZmVzYWt6aHF1eHJmeXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDMzMTQsImV4cCI6MjA3MTg3OTMxNH0.q3SVC9tUhYqLwyVZOJkQtfE_gcZ1Xrf2Eq-TuyJsg5A';
+const SUPABASE_URL = 'https://wygkdtlbjvdkhvvhkvxc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5Z2tkdGxianZka2h2dmhrdnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwMjk1OTksImV4cCI6MjA5OTYwNTU5OX0.ynghEKXttrQUOwMyrxHguYU6nzYeylXdeElwVU1o0cE';
 
 // Initialize Supabase client with error handling
 let supabaseClient;
