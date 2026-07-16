@@ -98,7 +98,47 @@ export const addFirma = async (name, turu, vknTcNo, vergiDairesi, sgkSicilNo, sg
         
         return data;
     } catch (error) {
-        console.error('Firma eklenirken hata:', error);
+        console.error('Firma ekleme hatası:', error);
+        throw error;
+    }
+};
+
+/**
+ * Add multiple companies (Bulk Upload)
+ * @param {Array} firmsArray - Array of firm objects
+ * @returns {Promise<Array>} Array of created company objects
+ */
+export const addFirmaBulk = async (firmsArray) => {
+    try {
+        if (!firmsArray || firmsArray.length === 0) {
+            throw new Error('Yüklenecek firma bulunamadı.');
+        }
+
+        // Basic validation for each firm
+        const validTypes = ['grup', 'satıcı', 'müşteri'];
+        for (const firm of firmsArray) {
+            if (!firm.name || firm.name.trim() === '') {
+                throw new Error(`Geçersiz firma adı: ${firm.name || 'İsimsiz'}`);
+            }
+            if (!validTypes.includes(firm.turu)) {
+                throw new Error(`"${firm.name}" için geçersiz firma türü: ${firm.turu}. ('grup', 'satıcı' veya 'müşteri' olmalıdır)`);
+            }
+        }
+
+        // Bulk insert
+        const data = await firmaOperations.createBulk(firmsArray);
+        
+        // Add to local array
+        if (data && data.length > 0) {
+            data.forEach(d => {
+                d.bankalar = [];
+                firmalar.push(d);
+            });
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('Toplu firma ekleme hatası:', error);
         throw error;
     }
 };

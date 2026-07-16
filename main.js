@@ -3,7 +3,7 @@
  * Coordinates all modules and initializes the application
  */
 
-import { fetchFirmalar, addFirma, updateFirma, deleteFirma, findFirmaById } from './modules/firmalar.js';
+import { fetchFirmalar, addFirma, updateFirma, deleteFirma, findFirmaById, addFirmaBulk } from './modules/firmalar.js';
 import { addBanka, updateBanka, deleteBanka } from './modules/bankalar.js';
 import { createHavaleEFTInstruction, createCariInstruction, createVergiInstruction as createVergiInstructionModule, formatInstructionNumber, formatCurrency, formatDate, printInstruction, instructionTypes } from './modules/talimatlar.js';
 import { validateIBAN, validateCompanyTypeRequirements, validateHavaleEFTForm, validateCurrencyMatch } from './modules/validasyon.js';
@@ -302,6 +302,9 @@ const setupApplicationEvents = () => {
     // Instruction events
     window.addEventListener('talimatOlustur', handleTalimatOlustur);
     window.addEventListener('talimatYazdir', handleTalimatYazdir);
+    
+    // Excel upload events
+    setupExcelUploadEvents();
 };
 
 /**
@@ -316,6 +319,107 @@ const handleFirmaSearchChanged = async (event) => {
     } catch (error) {
         console.error('Search/filter error:', error);
         showNotification('Arama sırasında bir hata oluştu', 'error');
+    }
+};
+
+/**
+ * Setup Excel Bulk Upload Events
+ */
+const setupExcelUploadEvents = () => {
+    const excelFileInput = document.getElementById('excelFileInput');
+    const downloadExcelTemplateBtn = document.getElementById('downloadExcelTemplateBtn');
+
+    if (downloadExcelTemplateBtn) {
+        downloadExcelTemplateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!window.XLSX) {
+                showNotification('Excel eklentisi yükleniyor, lütfen biraz bekleyip tekrar deneyin.', 'error');
+                return;
+            }
+            
+            const ws_data = [
+                ['Firma Adı', 'Firma Türü', 'VKN/T.C. No', 'Vergi Dairesi', 'SGK Sicil No', 'SGK Adı'],
+                ['Örnek Grup Firma A.Ş.', 'grup', '1234567890', 'Marmara V.D.', '', ''],
+                ['Örnek Satıcı Ltd. Şti.', 'satıcı', '1111111111', 'Boğaziçi V.D.', '1234567', 'Örnek SGK'],
+                ['Örnek Müşteri A.Ş.', 'müşteri', '', '', '', '']
+            ];
+            const ws = window.XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = window.XLSX.utils.book_new();
+            window.XLSX.utils.book_append_sheet(wb, ws, "Firmalar");
+            window.XLSX.writeFile(wb, "Firma_Yukleme_Sablonu.xlsx");
+        });
+    }
+
+    if (excelFileInput) {
+        excelFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!window.XLSX) {
+                showNotification('Excel eklentisi yüklenemedi. Lütfen sayfayı yenileyip tekrar deneyin.', 'error');
+                excelFileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = window.XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Convert sheet to json array of arrays
+                    const json = window.XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (json.length < 2) {
+                        throw new Error('Excel dosyasında veri bulunamadı. Lütfen ilk satırda başlıkların, ikinci satırdan itibaren verilerin olduğundan emin olun.');
+                    }
+
+                    const rows = json.slice(1);
+                    const firmsArray = [];
+                    let rowNum = 1;
+
+                    for (const row of rows) {
+                        rowNum++;
+                        // skip completely empty rows
+                        if (!row || row.length === 0 || !row[0]) continue;
+
+                        const name = row[0]?.toString().trim();
+                        let turu = row[1]?.toString().trim().toLowerCase();
+                        const vknTcNo = row[2]?.toString().trim() || null;
+                        const vergiDairesi = row[3]?.toString().trim() || null;
+                        const sgkSicilNo = row[4]?.toString().trim() || null;
+                        const sgkAdi = row[5]?.toString().trim() || null;
+
+                        // Auto correct missing turkish chars
+                        if (turu === 'satici') turu = 'satıcı';
+                        if (turu === 'musteri') turu = 'müşteri';
+
+                        firmsArray.push({ name, turu, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi });
+                    }
+
+                    if (firmsArray.length === 0) {
+                        throw new Error('Eklenecek geçerli satır bulunamadı.');
+                    }
+
+                    showNotification(`${firmsArray.length} firma yükleniyor, lütfen bekleyin...`, 'info');
+                    
+                    await addFirmaBulk(firmsArray);
+                    
+                    excelFileInput.value = '';
+                    refreshUI();
+                    hideModals();
+                    showNotification(`${firmsArray.length} firma başarıyla toplu olarak yüklendi!`);
+                    
+                } catch (error) {
+                    console.error('Excel upload error:', error);
+                    showNotification('Yükleme hatası: ' + error.message, 'error');
+                    excelFileInput.value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
     }
 };
 

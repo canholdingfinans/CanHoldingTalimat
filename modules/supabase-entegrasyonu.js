@@ -85,6 +85,36 @@ export const firmaOperations = {
         return data;
     },
 
+    // Add multiple firms (Bulk Insert)
+    async createBulk(firmsArray) {
+        if (!supabaseClient || !supabaseClient.from) {
+            console.warn('Supabase client not initialized, skipping bulk insert');
+            return [];
+        }
+        
+        // Transform incoming data to match database columns
+        const dbFirms = firmsArray.map(firm => ({
+            name: firm.name,
+            turu: firm.turu,
+            vkn_tc_no: firm.vknTcNo || null,
+            vergi_dairesi: firm.vergiDairesi || null,
+            sgk_sicil_no: firm.sgkSicilNo || null,
+            sgk_adi: firm.sgkAdi || null
+        }));
+
+        const { data, error } = await supabaseClient
+            .from('firms')
+            .insert(dbFirms)
+            .select();
+
+        if (error) {
+            console.error('Firmalar toplu eklenirken hata oluştu:', error.message);
+            throw new Error(`Toplu ekleme başarısız: ${error.message}`);
+        }
+
+        return data;
+    },
+
     // Update existing firm
     async update(id, name, turu, vknTcNo = null, vergiDairesi = null, sgkSicilNo = null, sgkAdi = null) {
         // Check if supabaseClient is properly initialized

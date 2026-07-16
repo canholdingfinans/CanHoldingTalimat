@@ -208,6 +208,27 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Kaydet</button>
                     </form>
+                    
+                    <hr class="my-4">
+                    
+                    <h6 class="mb-3"><i class="fas fa-file-excel text-success"></i> Toplu Firma Yükle (Excel)</h6>
+                    <div class="alert alert-light border">
+                        <p class="small mb-2">Excel dosyanızda ilk satırda başlıkların bulunması ve sırasıyla doldurulması önerilir:</p>
+                        <ul class="small text-muted mb-3">
+                            <li><strong>Firma Adı</strong> (Zorunlu)</li>
+                            <li><strong>Firma Türü</strong> (Zorunlu: 'grup', 'satıcı' veya 'müşteri')</li>
+                            <li>VKN/T.C. No (Opsiyonel)</li>
+                            <li>Vergi Dairesi (Opsiyonel)</li>
+                            <li>SGK Sicil No (Opsiyonel)</li>
+                            <li>SGK Adı (Opsiyonel)</li>
+                        </ul>
+                        <div class="d-flex gap-2">
+                            <input class="form-control form-control-sm" type="file" id="excelFileInput" accept=".xlsx, .xls">
+                            <button class="btn btn-outline-success btn-sm text-nowrap" id="downloadExcelTemplateBtn">
+                                <i class="fas fa-download"></i> Şablon İndir
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -280,6 +301,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
     <!-- Choices.js -->
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <!-- SheetJS (Excel) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script type="module" src="main.js"></script>
 </body>
 </html>
