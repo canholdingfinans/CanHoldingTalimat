@@ -1214,6 +1214,12 @@ const populateFormDropdowns = () => {
     firmSelects.forEach(selectId => {
         const select = document.getElementById(selectId);
         if (select) {
+            // If a Choices instance already exists for this element, destroy it first
+            if (choicesInstances[selectId]) {
+                choicesInstances[selectId].destroy();
+                delete choicesInstances[selectId];
+            }
+            
             const filterType = select.getAttribute('data-filter-type');
             
             select.innerHTML = '<option value="">Firma Seçiniz</option>';
