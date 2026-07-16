@@ -11,6 +11,17 @@ import { validateSWIFTCode } from './validasyon.js';
 let firmaModal, bankaModal;
 let currentInstructionType = 'havale-ic'; // Default to internal transfer
 
+// Choices.js instances for dropdowns
+let choicesInstances = {};
+const destroyChoices = () => {
+    Object.values(choicesInstances).forEach(instance => {
+        if (instance && typeof instance.destroy === 'function') {
+            instance.destroy();
+        }
+    });
+    choicesInstances = {};
+};
+
 /**
  * Initialize UI interactions
  */
@@ -669,6 +680,7 @@ const generateDynamicFormFields = (config) => {
     const container = document.getElementById('dynamicFormFields');
     if (!container) return;
     
+    destroyChoices();
     container.innerHTML = '';
     
     let fieldsHTML = '';
@@ -1221,6 +1233,16 @@ const populateFormDropdowns = () => {
                 select.add(option);
             });
             
+            if (window.Choices) {
+                choicesInstances[selectId] = new Choices(select, {
+                    searchEnabled: true,
+                    searchFloor: 3,
+                    itemSelectText: 'Seçmek için tıklayın',
+                    noResultsText: 'Sonuç bulunamadı',
+                    noChoicesText: 'Seçenek bulunmuyor'
+                });
+            }
+            
             console.log(`Populated ${selectId} with ${filteredFirmalar.length}/${firmalar.length} firms (filter: ${filterType || 'all'})`);
         }
     });
@@ -1671,6 +1693,16 @@ const addNewPaymentField = () => {
             const option = new Option(firma.name, firma.id);
             firmaSelect.add(option);
         });
+        
+        if (window.Choices) {
+            choicesInstances[`aliciFirma_${paymentId}`] = new Choices(firmaSelect, {
+                searchEnabled: true,
+                searchFloor: 3,
+                itemSelectText: 'Seçmek için tıklayın',
+                noResultsText: 'Sonuç bulunamadı',
+                noChoicesText: 'Seçenek bulunmuyor'
+            });
+        }
     }
     
     // Add event listener for the recipient company dropdown to populate bank accounts
