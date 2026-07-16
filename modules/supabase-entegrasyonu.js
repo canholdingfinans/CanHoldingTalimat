@@ -120,6 +120,9 @@ export const firmaOperations = {
 
         if (error) {
             console.error('Firma silinirken hata oluştu:', error.message);
+            if (error.message.includes('violates foreign key constraint')) {
+                throw new Error('Bu firma geçmiş bir talimatta kullanıldığı için silinemez. Silmek için öncelikle bu firmaya ait geçmiş talimatları arşivden (veya veritabanından) kaldırmalısınız.');
+            }
             throw new Error(`Firma silinemedi: ${error.message}`);
         }
     },
