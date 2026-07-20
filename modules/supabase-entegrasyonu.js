@@ -211,6 +211,24 @@ export const bankaOperations = {
         return data;
     },
 
+    // Add multiple bank accounts (Bulk Insert)
+    async createBulk(bankaDataArray) {
+        if (!bankaDataArray || bankaDataArray.length === 0) return [];
+        if (!supabaseClient || !supabaseClient.from) {
+            console.warn('Supabase client not initialized, skipping bulk insert');
+            return [];
+        }
+        const { data, error } = await supabaseClient
+            .from('bank_accounts')
+            .insert(bankaDataArray)
+            .select();
+        if (error) {
+            console.error('Bankalar toplu eklenirken hata oluştu:', error.message);
+            throw new Error(`Toplu banka ekleme başarısız: ${error.message}`);
+        }
+        return data;
+    },
+
     // Update existing bank account
     async update(id, bankaData) {
         // Check if supabaseClient is properly initialized

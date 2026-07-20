@@ -4,7 +4,7 @@
  */
 
 import { fetchFirmalar, addFirma, updateFirma, deleteFirma, findFirmaById, addFirmaBulk } from './modules/firmalar.js';
-import { addBanka, updateBanka, deleteBanka } from './modules/bankalar.js';
+import { addBanka, updateBanka, deleteBanka, addBankaBulk } from './modules/bankalar.js';
 import { createHavaleEFTInstruction, createCariInstruction, createVergiInstruction as createVergiInstructionModule, formatInstructionNumber, formatCurrency, formatDate, printInstruction, instructionTypes } from './modules/talimatlar.js';
 import { validateIBAN, validateCompanyTypeRequirements, validateHavaleEFTForm, validateCurrencyMatch } from './modules/validasyon.js';
 import { initializeUI, renderFirmaAccordion, showNotification, showFirmaModal, showBankaModal, hideModals, refreshUI, getCurrentInstructionType } from './modules/ui-etkilesimleri.js';
@@ -338,15 +338,18 @@ const setupExcelUploadEvents = () => {
             }
             
             const ws_data = [
-                ['Firma Adı', 'Firma Türü', 'VKN/T.C. No', 'Vergi Dairesi', 'SGK Sicil No', 'SGK Adı'],
-                ['Örnek Grup Firma A.Ş.', 'grup', '1234567890', 'Marmara V.D.', '', ''],
-                ['Örnek Satıcı Ltd. Şti.', 'satıcı', '1111111111', 'Boğaziçi V.D.', '1234567', 'Örnek SGK'],
-                ['Örnek Müşteri A.Ş.', 'müşteri', '', '', '', '']
+                ['Firma Adı', 'Firma Türü', 'VKN/T.C. No', 'Vergi Dairesi', 'SGK Sicil No', 'SGK Adı',
+                 'Banka Adı', 'IBAN', 'Para Birimi', 'Şube Adı', 'Şube İli', 'SWIFT Kodu', 'Hesap No'],
+                ['Örnek Grup Firma A.Ş.', 'grup', '1234567890', 'Marmara V.D.', '', '',
+                 'Ziraat Bankası', 'TR330006100519786457841326', 'TRY', 'Merkez Şube', 'İstanbul', '', ''],
+                ['Örnek Satıcı Ltd. Şti.', 'satıcı', '1111111111', 'Boğaziçi V.D.', '1234567', 'Örnek SGK',
+                 'İş Bankası', 'TR640006400000112345678901', 'TRY', '', '', 'ISBKTRIS', ''],
+                ['Örnek Müşteri A.Ş.', 'müşteri', '', '', '', '', '', '', '', '', '', '', '']
             ];
             const ws = window.XLSX.utils.aoa_to_sheet(ws_data);
             const wb = window.XLSX.utils.book_new();
             window.XLSX.utils.book_append_sheet(wb, ws, "Firmalar");
-            window.XLSX.writeFile(wb, "Firma_Yukleme_Sablonu.xlsx");
+            window.XLSX.writeFile(wb, "Firma_Banka_Yukleme_Sablonu.xlsx");
         });
     }
 
@@ -377,15 +380,18 @@ const setupExcelUploadEvents = () => {
                     }
 
                     const rows = json.slice(1);
-                    const firmsArray = [];
+                    const firmsMap = new Map(); // firmaAdi(lowercase) -> firmaObj (first seen C-F values kept)
+                    const bankaSatirlari = [];
                     let rowNum = 1;
 
                     for (const row of rows) {
                         rowNum++;
-                        // skip completely empty rows
+                        // skip completely empty rows or rows without firm name
                         if (!row || row.length === 0 || !row[0]) continue;
 
                         const name = row[0]?.toString().trim();
+                        if (!name) continue;
+
                         let turu = row[1]?.toString().trim().toLowerCase();
                         const vknTcNo = row[2]?.toString().trim() || null;
                         const vergiDairesi = row[3]?.toString().trim() || null;
@@ -396,21 +402,68 @@ const setupExcelUploadEvents = () => {
                         if (turu === 'satici') turu = 'satıcı';
                         if (turu === 'musteri') turu = 'müşteri';
 
-                        firmsArray.push({ name, turu, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi });
+                        const key = name.toLowerCase().trim();
+                        if (!firmsMap.has(key)) {
+                            firmsMap.set(key, { name, turu, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi });
+                        }
+
+                        // Bank fields (G-M)
+                        const banka_adi = row[6]?.toString().trim();
+                        const iban = row[7]?.toString().trim();
+                        const para_birimi = row[8]?.toString().trim();
+                        const sube_adi = row[9]?.toString().trim();
+                        const sube_il = row[10]?.toString().trim();
+                        const swift_kodu = row[11]?.toString().trim();
+                        const hesap_no = row[12]?.toString().trim();
+
+                        if (banka_adi) {
+                            bankaSatirlari.push({
+                                satirNo: rowNum,
+                                firmaAdi: name,
+                                banka_adi,
+                                iban,
+                                para_birimi,
+                                sube_adi,
+                                sube_il,
+                                swift_kodu,
+                                hesap_no
+                            });
+                        }
                     }
 
+                    const firmsArray = Array.from(firmsMap.values());
                     if (firmsArray.length === 0) {
                         throw new Error('Eklenecek geçerli satır bulunamadı.');
                     }
 
-                    showNotification(`${firmsArray.length} firma yükleniyor, lütfen bekleyin...`, 'info');
+                    showNotification('Veriler işleniyor, lütfen bekleyin...', 'info');
                     
-                    await addFirmaBulk(firmsArray);
+                    // Add/resolve firms (returns Map<key, {id, turu, name, yeni}>)
+                    const firmaResultMap = await addFirmaBulk(firmsArray);
                     
+                    let yeniFirmaSayisi = 0;
+                    firmaResultMap.forEach(f => {
+                        if (f.yeni) yeniFirmaSayisi++;
+                    });
+
+                    let bankaSonuc = null;
+                    if (bankaSatirlari.length > 0) {
+                        bankaSonuc = await addBankaBulk(bankaSatirlari, firmaResultMap);
+                    }
+
                     excelFileInput.value = '';
                     refreshUI();
                     hideModals();
-                    showNotification(`${firmsArray.length} firma başarıyla toplu olarak yüklendi!`);
+
+                    const eklenenBank = bankaSonuc ? bankaSonuc.eklenen.length : 0;
+                    const atlananBank = bankaSonuc ? bankaSonuc.atlanan.length : 0;
+                    const hataliBank = bankaSonuc ? bankaSonuc.hatali.length : 0;
+
+                    let msg = `${yeniFirmaSayisi} yeni firma, ${eklenenBank} banka hesabı eklendi.`;
+                    if (atlananBank > 0) msg += ` ${atlananBank} kayıt atlandı (zaten mevcut).`;
+                    if (hataliBank > 0) msg += ` ${hataliBank} satır hatalı, atlandı.`;
+
+                    showNotification(msg, hataliBank > 0 ? 'warning' : 'success');
                     
                 } catch (error) {
                     console.error('Excel upload error:', error);

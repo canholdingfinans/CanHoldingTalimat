@@ -30,6 +30,21 @@ export const validateIBAN = (iban) => {
 };
 
 /**
+ * Extended IBAN Validation (Supports TR and Foreign IBANs)
+ * @param {string} iban - IBAN number to validate
+ * @returns {boolean} - True if valid, false otherwise
+ */
+export const validateIBANExtended = (iban) => {
+    if (!iban) return false;
+    const cleanIban = iban.replace(/\s+/g, '').toUpperCase();
+    if (cleanIban.startsWith('TR')) {
+        return cleanIban.length === 26 && /^TR\d{24}$/.test(cleanIban);
+    }
+    // Yabancı IBAN: ISO 13616 aralığı — 2 harf ülke kodu + 2 rakam + 11-30 alfanümerik
+    return /^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(cleanIban);
+};
+
+/**
  * Validate required form fields
  * @param {Object} fields - Object containing field names and values
  * @returns {Object} - {isValid: boolean, errors: string[]}

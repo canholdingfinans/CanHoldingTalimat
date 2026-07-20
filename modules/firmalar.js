@@ -114,29 +114,48 @@ export const addFirmaBulk = async (firmsArray) => {
             throw new Error('Yüklenecek firma bulunamadı.');
         }
 
-        // Basic validation for each firm
         const validTypes = ['grup', 'satıcı', 'müşteri'];
         for (const firm of firmsArray) {
             if (!firm.name || firm.name.trim() === '') {
                 throw new Error(`Geçersiz firma adı: ${firm.name || 'İsimsiz'}`);
             }
             if (!validTypes.includes(firm.turu)) {
-                throw new Error(`"${firm.name}" için geçersiz firma türü: ${firm.turu}. ('grup', 'satıcı' veya 'müşteri' olmalıdır)`);
+                throw new Error(`"${firm.name}" için geçersiz firma türü: ${firm.turu}.`);
             }
         }
 
-        // Bulk insert
-        const data = await firmaOperations.createBulk(firmsArray);
-        
-        // Add to local array
-        if (data && data.length > 0) {
+        // Güncel DB durumunu çek (mevcut firmalar[] önbelleğini senkronlar)
+        await fetchFirmalar();
+
+        // Ad bazlı (case-insensitive) eşleme
+        const mevcutMap = new Map(firmalar.map(f => [f.name.toLowerCase().trim(), f]));
+
+        const yeniFirmalar = [];
+        const sonucMap = new Map(); // firmaAdi(lowercase) -> {id, turu, name, yeni}
+
+        for (const firm of firmsArray) {
+            const key = firm.name.toLowerCase().trim();
+            if (mevcutMap.has(key)) {
+                const mevcut = mevcutMap.get(key);
+                sonucMap.set(key, { id: mevcut.id, turu: mevcut.turu, name: mevcut.name, yeni: false });
+            } else if (!sonucMap.has(key)) {
+                // aynı Excel içinde tekrar eden yeni firma adını tek kez kuyruğa al
+                yeniFirmalar.push(firm);
+                sonucMap.set(key, { id: null, turu: firm.turu, name: firm.name, yeni: true });
+            }
+        }
+
+        if (yeniFirmalar.length > 0) {
+            const data = await firmaOperations.createBulk(yeniFirmalar);
             data.forEach(d => {
                 d.bankalar = [];
                 firmalar.push(d);
+                const key = d.name.toLowerCase().trim();
+                sonucMap.set(key, { id: d.id, turu: d.turu, name: d.name, yeni: true });
             });
         }
-        
-        return data;
+
+        return sonucMap; // Map<firmaAdiLowercase, {id, turu, name, yeni}>
     } catch (error) {
         console.error('Toplu firma ekleme hatası:', error);
         throw error;

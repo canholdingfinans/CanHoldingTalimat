@@ -4,7 +4,7 @@
  */
 
 import { bankaOperations } from './supabase-entegrasyonu.js';
-import { validateIBAN, validateBankName, validateSWIFTCode } from './validasyon.js';
+import { validateIBAN, validateBankName, validateSWIFTCode, validateIBANExtended } from './validasyon.js';
 import { findFirmaById, addBankToFirma, updateBankInFirma, removeBankFromFirma, getFirmalar } from './firmalar.js';
 
 /**
@@ -28,7 +28,7 @@ export const getCurrencies = () => {
  */
 export const findBankById = (bankId) => {
     const firmalar = getFirmalar();
-    
+
     for (const firma of firmalar) {
         if (firma.bankalar) {
             const bank = firma.bankalar.find(b => b.id == bankId);
@@ -61,9 +61,9 @@ export const getBanksForFirma = (firmaId) => {
  */
 export const checkIBANExists = (iban, excludeBankId = null) => {
     const firmalar = getFirmalar();
-    
-    return firmalar.some(firma => 
-        (firma.bankalar || []).some(banka => 
+
+    return firmalar.some(firma =>
+        (firma.bankalar || []).some(banka =>
             banka.iban === iban && banka.id != excludeBankId
         )
     );
@@ -135,10 +135,10 @@ export const addBanka = async (bankData) => {
 
         // Create bank account
         const data = await bankaOperations.create(cleanBankData);
-        
+
         // Add to local company data
         addBankToFirma(bankData.firm_id, data);
-        
+
         return data;
     } catch (error) {
         console.error('Banka hesabı eklenirken hata:', error);
@@ -210,15 +210,94 @@ export const updateBanka = async (bankId, bankData) => {
 
         // Update bank account
         const data = await bankaOperations.update(bankId, cleanBankData);
-        
+
         // Update local company data
         updateBankInFirma(data.firm_id, data);
-        
+
         return data;
     } catch (error) {
         console.error('Banka hesabı güncellenirken hata:', error);
         throw error;
     }
+};
+
+/**
+ * Add multiple bank accounts (Bulk Upload)
+ * @param {Array} bankaSatirlari - Array of bank account row objects from Excel
+ * @param {Map} firmaMap - Map<firmaAdiLowercase, {id, turu, name, yeni}>
+ * @returns {Promise<Object>} { eklenen: Array, atlanan: Array, hatali: Array }
+ */
+export const addBankaBulk = async (bankaSatirlari, firmaMap) => {
+    const eklenen = [];
+    const atlanan = [];
+    const hatali = [];
+    const gecerliSatirlar = [];
+    const gorulenIbanlar = new Set();
+
+    for (const satir of bankaSatirlari) {
+        const key = satir.firmaAdi.toLowerCase().trim();
+        const firma = firmaMap.get(key);
+
+        if (!firma) {
+            hatali.push({ satirNo: satir.satirNo, sebep: `Firma bulunamadı: ${satir.firmaAdi}` });
+            continue;
+        }
+        if (!satir.banka_adi || satir.banka_adi.trim() === '') {
+            hatali.push({ satirNo: satir.satirNo, sebep: 'Banka Adı zorunludur.' });
+            continue;
+        }
+        const isGrup = firma.turu === 'grup';
+        if (isGrup && (!satir.sube_adi?.trim() || !satir.sube_il?.trim())) {
+            hatali.push({ satirNo: satir.satirNo, sebep: 'Grup firmaları için Şube Adı ve Şube İli zorunludur.' });
+            continue;
+        }
+        const gecerliParaBirimleri = ['TRY', 'USD', 'EUR', 'GBP', 'CHF'];
+        const paraBirimi = satir.para_birimi?.trim().toUpperCase();
+        if (!gecerliParaBirimleri.includes(paraBirimi)) {
+            hatali.push({ satirNo: satir.satirNo, sebep: `Geçersiz para birimi: ${satir.para_birimi}` });
+            continue;
+        }
+        const cleanIban = (satir.iban || '').replace(/\s+/g, '').toUpperCase();
+        if (!validateIBANExtended(cleanIban)) {
+            hatali.push({ satirNo: satir.satirNo, sebep: 'IBAN formatı geçersiz.' });
+            continue;
+        }
+        if (checkIBANExists(cleanIban) || gorulenIbanlar.has(cleanIban)) {
+            atlanan.push({ satirNo: satir.satirNo, sebep: 'Bu IBAN zaten kayıtlı.' });
+            continue;
+        }
+        if (satir.swift_kodu) {
+            const swiftValidation = validateSWIFTCode(satir.swift_kodu);
+            if (!swiftValidation.isValid) {
+                hatali.push({ satirNo: satir.satirNo, sebep: swiftValidation.message });
+                continue;
+            }
+        }
+
+        gorulenIbanlar.add(cleanIban);
+        gecerliSatirlar.push({
+            firm_id: firma.id,
+            banka_adi: satir.banka_adi.trim(),
+            sube_adi: satir.sube_adi?.trim() || null,
+            sube_il: satir.sube_il?.trim() || null,
+            iban: cleanIban,
+            para_birimi: paraBirimi,
+            hesap_no: satir.hesap_no?.trim() || null,
+            swift_kodu: satir.swift_kodu?.trim().toUpperCase() || null,
+            _satirNo: satir.satirNo
+        });
+    }
+
+    if (gecerliSatirlar.length > 0) {
+        const dbHazir = gecerliSatirlar.map(({ _satirNo, ...rest }) => rest);
+        const data = await bankaOperations.createBulk(dbHazir);
+        data.forEach(d => {
+            addBankToFirma(d.firm_id, d);
+            eklenen.push(d);
+        });
+    }
+
+    return { eklenen, atlanan, hatali };
 };
 
 /**
@@ -230,7 +309,7 @@ export const updateBanka = async (bankId, bankData) => {
 export const deleteBanka = async (bankId, firmaId) => {
     try {
         await bankaOperations.delete(bankId);
-        
+
         // Remove from local company data
         removeBankFromFirma(firmaId, bankId);
     } catch (error) {
@@ -247,7 +326,7 @@ export const deleteBanka = async (bankId, firmaId) => {
 export const getBanksByCurrency = (currency) => {
     const firmalar = getFirmalar();
     const banks = [];
-    
+
     firmalar.forEach(firma => {
         if (firma.bankalar) {
             firma.bankalar.forEach(banka => {
@@ -260,7 +339,7 @@ export const getBanksByCurrency = (currency) => {
             });
         }
     });
-    
+
     return banks;
 };
 
@@ -271,7 +350,7 @@ export const getBanksByCurrency = (currency) => {
 export const getAllBanks = () => {
     const firmalar = getFirmalar();
     const allBanks = [];
-    
+
     firmalar.forEach(firma => {
         if (firma.bankalar) {
             firma.bankalar.forEach(banka => {
@@ -282,7 +361,7 @@ export const getAllBanks = () => {
             });
         }
     });
-    
+
     return allBanks;
 };
 
@@ -299,16 +378,16 @@ export const getBankStatistics = () => {
         companiesWithBanks: 0,
         companiesWithoutBanks: 0
     };
-    
+
     // Count by currency and bank name
     allBanks.forEach(bank => {
         // By currency
         stats.byCurrency[bank.para_birimi] = (stats.byCurrency[bank.para_birimi] || 0) + 1;
-        
+
         // By bank name
         stats.byBank[bank.banka_adi] = (stats.byBank[bank.banka_adi] || 0) + 1;
     });
-    
+
     // Count companies with/without banks
     const firmalar = getFirmalar();
     firmalar.forEach(firma => {
@@ -318,7 +397,7 @@ export const getBankStatistics = () => {
             stats.companiesWithoutBanks++;
         }
     });
-    
+
     return stats;
 };
 
@@ -329,10 +408,10 @@ export const getBankStatistics = () => {
  */
 export const formatIBAN = (iban) => {
     if (!iban) return '';
-    
+
     // Remove existing spaces
     const cleanIban = iban.replace(/\s/g, '');
-    
+
     // Add spaces every 4 characters
     return cleanIban.replace(/(.{4})/g, '$1 ').trim();
 };
@@ -344,7 +423,7 @@ export const formatIBAN = (iban) => {
  */
 export const getBankDisplayName = (bank) => {
     if (!bank) return '';
-    
+
     return `${bank.banka_adi} - ${bank.para_birimi}`;
 };
 
@@ -356,6 +435,6 @@ export const getBankDisplayName = (bank) => {
  */
 export const checkCurrencyCompatibility = (bank1, bank2) => {
     if (!bank1 || !bank2) return false;
-    
+
     return bank1.para_birimi === bank2.para_birimi;
 };
