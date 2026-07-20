@@ -1520,8 +1520,8 @@ export const showBankaModal = (firmaId, banka = null) => {
         
         if (bankaIdElement) bankaIdElement.value = banka.id;
         if (bankaAdiElement) bankaAdiElement.value = banka.banka_adi;
-        if (subeAdiElement) subeAdiElement.value = banka.sube_adi;
-        if (subeIlElement) subeIlElement.value = banka.sube_il;
+        if (subeAdiElement) subeAdiElement.value = banka.sube_adi || '';
+        if (subeIlElement) subeIlElement.value = banka.sube_il || '';
         if (ibanElement) ibanElement.value = banka.iban;
         if (paraBirimiElement) paraBirimiElement.value = banka.para_birimi;
         if (hesapNoElement) hesapNoElement.value = banka.hesap_no || '';
@@ -1529,6 +1529,28 @@ export const showBankaModal = (firmaId, banka = null) => {
     } else {
         const bankaIdElement = document.getElementById('bankaId');
         if (bankaIdElement) bankaIdElement.value = '';
+    }
+    
+    // Conditionally require fields based on firm type
+    const firma = findFirmaById(firmaId);
+    const isGrup = firma?.turu === 'grup';
+    const subeAdiElement = document.getElementById('subeAdi');
+    const subeIlElement = document.getElementById('subeIl');
+    
+    if (subeAdiElement) {
+        subeAdiElement.required = isGrup;
+        const label = document.querySelector('label[for="subeAdi"]');
+        if (label) {
+            label.textContent = isGrup ? 'Şube Adı' : 'Şube Adı (Opsiyonel)';
+        }
+    }
+    
+    if (subeIlElement) {
+        subeIlElement.required = isGrup;
+        const label = document.querySelector('label[for="subeIl"]');
+        if (label) {
+            label.textContent = isGrup ? 'İl' : 'İl (Opsiyonel)';
+        }
     }
     
     if (bankaModal) bankaModal.show();

@@ -1136,7 +1136,7 @@ const generateHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirm
                         </tr>
                         <tr>
                             <th class="table-light">Alıcı Şube</th>
-                            <td>${aliciBanka.sube_adi} / ${aliciBanka.sube_il}</td>
+                            <td>${aliciBanka.sube_adi || '-'} / ${aliciBanka.sube_il || '-'}</td>
                         </tr>
                         <tr>
                             <th class="table-light">Alıcı IBAN</th>

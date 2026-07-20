@@ -86,12 +86,15 @@ export const addBanka = async (bankData) => {
             throw new Error(nameValidation.message);
         }
 
-        if (!bankData.sube_adi?.trim()) {
-            throw new Error('Şube adı boş bırakılamaz.');
+        const firma = findFirmaById(bankData.firm_id);
+        const isGrup = firma?.turu === 'grup';
+
+        if (isGrup && !bankData.sube_adi?.trim()) {
+            throw new Error('Grup firmaları için Şube Adı zorunludur.');
         }
 
-        if (!bankData.sube_il?.trim()) {
-            throw new Error('Şube ili boş bırakılamaz.');
+        if (isGrup && !bankData.sube_il?.trim()) {
+            throw new Error('Grup firmaları için Şube İli zorunludur.');
         }
 
         if (!bankData.para_birimi) {
@@ -123,8 +126,8 @@ export const addBanka = async (bankData) => {
         const cleanBankData = {
             ...bankData,
             banka_adi: bankData.banka_adi.trim(),
-            sube_adi: bankData.sube_adi.trim(),
-            sube_il: bankData.sube_il.trim(),
+            sube_adi: bankData.sube_adi?.trim() || null,
+            sube_il: bankData.sube_il?.trim() || null,
             iban: cleanIban,
             hesap_no: bankData.hesap_no?.trim() || null,
             swift_kodu: bankData.swift_kodu?.trim().toUpperCase() || null
@@ -157,12 +160,15 @@ export const updateBanka = async (bankId, bankData) => {
             throw new Error(nameValidation.message);
         }
 
-        if (!bankData.sube_adi?.trim()) {
-            throw new Error('Şube adı boş bırakılamaz.');
+        const firma = findFirmaById(bankData.firm_id);
+        const isGrup = firma?.turu === 'grup';
+
+        if (isGrup && !bankData.sube_adi?.trim()) {
+            throw new Error('Grup firmaları için Şube Adı zorunludur.');
         }
 
-        if (!bankData.sube_il?.trim()) {
-            throw new Error('Şube ili boş bırakılamaz.');
+        if (isGrup && !bankData.sube_il?.trim()) {
+            throw new Error('Grup firmaları için Şube İli zorunludur.');
         }
 
         if (!bankData.para_birimi) {
@@ -193,8 +199,8 @@ export const updateBanka = async (bankId, bankData) => {
         // Prepare clean data
         const cleanBankData = {
             banka_adi: bankData.banka_adi.trim(),
-            sube_adi: bankData.sube_adi.trim(),
-            sube_il: bankData.sube_il.trim(),
+            sube_adi: bankData.sube_adi?.trim() || null,
+            sube_il: bankData.sube_il?.trim() || null,
             iban: cleanIban,
             para_birimi: bankData.para_birimi,
             hesap_no: bankData.hesap_no?.trim() || null,
