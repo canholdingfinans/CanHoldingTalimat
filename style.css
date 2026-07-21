@@ -341,62 +341,57 @@ body {
   transition: all 0.3s ease;
 }
 
-/* Base Sidebar */
+/* Base Sidebar (Panel UI) */
 .sidebar-container {
   width: 350px;
   flex-shrink: 0;
   background: #fff;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), position 0.3s ease;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1050;
   display: flex;
   flex-direction: column;
   padding: 1rem;
+  align-self: flex-start; /* Stops infinite height stretch */
+  border-radius: 8px; /* Panel feel */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Floating shadow */
+  margin: 10px; /* Breathing room */
 }
 
 /* States */
 .sidebar-collapsed {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  transform: translateX(-100%);
+  margin-left: -370px; /* Push completely out of view (350px + 20px margins) */
 }
 
-.sidebar-expanded-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  transform: translateX(0);
-  box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-  height: 100%;
-}
-
+.sidebar-expanded-overlay,
 .sidebar-expanded-pinned {
-  position: relative;
-  transform: translateX(0);
-  /* No shadow needed when pinned, flows normally */
-  border-right: 1px solid #dee2e6;
+  margin-left: 0; /* Pushes the main content */
 }
 
 /* Main Content */
 .main-content {
   flex-grow: 1;
   width: 100%;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 1400px; /* Centered max-width for wide screens */
+  margin: 0 auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 1rem;
 }
 
-/* Toggle Button */
+/* Toggle Button (Floating Action Button) */
 .sidebar-toggle-btn {
   position: fixed;
-  left: 0;
+  left: 20px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1040;
-  border-radius: 0 5px 5px 0;
-  padding: 15px 10px;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  border-radius: 50%; /* Fully round */
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
 }
 
 /* Pin Button Active State */
