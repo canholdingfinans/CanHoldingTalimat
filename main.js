@@ -212,12 +212,8 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
                 
                 <div class="kase-alani mt-3">
                     <div class="kase-kutu">
-                        <div class="kase-cerceve">
-                            <div class="kase-metin">
-                                <small>YETKİLİ İMZA</small><br>
-                                <small>(Kaşe)</small>
-                            </div>
-                        </div>
+                        <div class="kase-metin">YETKİLİ İMZA (Kaşe)</div>
+                        <div class="kase-cerceve"></div>
                     </div>
                 </div>
             </div>
@@ -1246,12 +1242,8 @@ const generateHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirm
                 
                 <div class="kase-alani mt-4">
                     <div class="kase-kutu">
-                        <div class="kase-cerceve">
-                            <div class="kase-metin">
-                                <small>YETKİLİ İMZA</small><br>
-                                <small>(Kaşe)</small>
-                            </div>
-                        </div>
+                        <div class="kase-metin">YETKİLİ İMZA (Kaşe)</div>
+                        <div class="kase-cerceve"></div>
                     </div>
                 </div>
             </div>
@@ -1373,12 +1365,8 @@ const generateVergiTalimatCikti = (gondericiFirma, gondericiBanka, tutar, acikla
                 
                 <div class="kase-alani mt-4">
                     <div class="kase-kutu">
-                        <div class="kase-cerceve">
-                            <div class="kase-metin">
-                                <small>YETKİLİ İMZA</small><br>
-                                <small>(Kaşe)</small>
-                            </div>
-                        </div>
+                        <div class="kase-metin">YETKİLİ İMZA (Kaşe)</div>
+                        <div class="kase-cerceve"></div>
                     </div>
                 </div>
             </div>

@@ -227,17 +227,14 @@ body {
   border: 1px solid #333;
   min-width: 4cm;
   min-height: 2cm;
-  padding: 4px 8px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
 }
 
 .kase-metin {
   font-weight: normal;
   text-align: left;
-  color: #999;
+  color: #555;
   font-size: 8pt;
+  margin-bottom: 2px;
 }
 
 /* =================================================================
