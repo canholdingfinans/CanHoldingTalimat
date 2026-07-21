@@ -1083,12 +1083,15 @@ const createCariInstructionFromForm = async () => {
     // Debug: Log the results
     console.log('Created instructions:', results);
     
+    // Get the base instruction number from the first created instruction
+    const baseInstructionNumber = results.length > 0 ? results[0].instruction.instruction_number : '';
+    
     // Generate and display multi-payment instruction output
     console.log('Generating multi-payment output with:', {
         gondericiFirma: gondericiFirma.name,
         gondericiBanka: gondericiBanka.iban,
         payments: payments.length,
-        nextNumber: nextNumber,
+        baseInstructionNumber: baseInstructionNumber,
         talimatTarihi: talimatTarihi
     });
     
@@ -1096,7 +1099,7 @@ const createCariInstructionFromForm = async () => {
         gondericiFirma,
         gondericiBanka,
         payments,
-        nextNumber,
+        baseInstructionNumber,
         talimatTarihi
     );
 };
