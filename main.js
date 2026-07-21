@@ -11,6 +11,50 @@ import { initializeUI, renderFirmaAccordion, showNotification, showFirmaModal, s
 import { talimatOperations } from './modules/supabase-entegrasyonu.js';
 
 /**
+ * Hitap bloğunu oluşturur (Banka Adı, İl, Şube)
+ */
+const buildHitapBlogu = (banka) => {
+    if (!banka) return '';
+    const bankaAdi = banka.banka_adi || '';
+    const subeIl = banka.sube_il ? banka.sube_il.toUpperCase() : 'İSTANBUL';
+    const subeAdi = banka.sube_adi ? banka.sube_adi.toUpperCase().trim() : '';
+    
+    let subeSatiri = '';
+    let subeMetin = ''; // Text format for the paragraph
+    
+    if (subeAdi) {
+        // Eğer kullanıcı ŞUBE veya MÜDÜRLÜĞÜ kelimelerini kullandıysa durumu yönet
+        if (subeAdi.includes('ŞUBESİ')) {
+            // Örn: KOZYATAĞI ŞUBESİ -> KOZYATAĞI ŞUBESİ'NE
+            subeSatiri = `<h5><strong>${subeAdi}'NE</strong></h5>`;
+            subeMetin = subeAdi;
+        } else if (subeAdi.includes('MÜDÜRLÜĞÜ')) {
+            // Örn: KOZYATAĞI ŞUBE MÜDÜRLÜĞÜ -> KOZYATAĞI ŞUBE MÜDÜRLÜĞÜ'NE
+            subeSatiri = `<h5><strong>${subeAdi}'NE</strong></h5>`;
+            subeMetin = subeAdi;
+        } else if (subeAdi.endsWith('ŞUBE')) {
+            // Örn: KOZYATAĞI ŞUBE -> KOZYATAĞI ŞUBESİ'NE
+            subeSatiri = `<h5><strong>${subeAdi}Sİ'NE</strong></h5>`;
+            subeMetin = `${subeAdi}Sİ`;
+        } else {
+            // Örn: KOZYATAĞI -> KOZYATAĞI ŞUBE MÜDÜRLÜĞÜ'NE
+            subeSatiri = `<h5><strong>${subeAdi} ŞUBE MÜDÜRLÜĞÜ'NE</strong></h5>`;
+            subeMetin = `${subeAdi} Şubesi`;
+        }
+    }
+    
+    const html = `
+        <div class="talimat-addressee">
+            <h5><strong>${bankaAdi}</strong></h5>
+            <h5><strong><u>${subeIl}</u></strong></h5>
+            ${subeSatiri}
+        </div>
+    `;
+    
+    return { html, text: `${bankaAdi} ${subeMetin}`.trim() };
+};
+
+/**
  * Generate multi-payment Havale/EFT instruction output with horizontal table layout
  */
 const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, payments, talimatNo, talimatTarihi) => {
@@ -94,11 +138,8 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
         `;
     }).join('');
 
-    const gondericiSubeAdi = gondericiBanka.sube_adi ? gondericiBanka.sube_adi.toUpperCase() : '';
-    const hasSubeSuffix = gondericiSubeAdi.includes('ŞUBE') || gondericiSubeAdi.includes('MÜDÜRLÜĞÜ');
-    const gondericiSubeHitap = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' ŞUBE MÜDÜRLÜĞÜ'}'NE`;
-
-    const gondericiSubeMetin = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' Şubesi'}`;
+    const hitapVerisi = buildHitapBlogu(gondericiBanka);
+    const gondericiSubeMetin = hitapVerisi.text;
 
     const widthUnvan = hasForeignCurrency ? '24%' : '28%';
     const widthIban = hasForeignCurrency ? '21%' : '24%';
@@ -115,10 +156,7 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
                 </div>
             </div>
             
-            <div class="talimat-addressee">
-                <h5><strong>${gondericiSubeHitap}</strong></h5>
-                <h6><strong><u>${gondericiBanka.sube_il?.toUpperCase() || 'İSTANBUL'}</u></strong></h6>
-            </div>
+            ${hitapVerisi.html}
             
             <h3 class="talimat-title text-center my-3">
                 <strong>TOPLU ÖDEME TALİMATI</strong>
@@ -1120,10 +1158,8 @@ const generateHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirm
     const formattedTutar = formatCurrency(tutar, gondericiBanka.para_birimi);
     const displayTalimatNo = formatInstructionNumber(talimatNo);
 
-    const gondericiSubeAdi = gondericiBanka.sube_adi ? gondericiBanka.sube_adi.toUpperCase() : '';
-    const hasSubeSuffix = gondericiSubeAdi.includes('ŞUBE') || gondericiSubeAdi.includes('MÜDÜRLÜĞÜ');
-    const gondericiSubeHitap = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' ŞUBE MÜDÜRLÜĞÜ'}'NE`;
-    const gondericiSubeMetin = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' Şubesi'}`;
+    const hitapVerisi = buildHitapBlogu(gondericiBanka);
+    const gondericiSubeMetin = hitapVerisi.text;
 
     talimatCikti.innerHTML = `
         <div class="talimat-container">
@@ -1137,10 +1173,7 @@ const generateHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirm
                 </div>
             </div>
             
-            <div class="talimat-addressee">
-                <h5><strong>${gondericiSubeHitap}</strong></h5>
-                <h6><strong><u>${gondericiBanka.sube_il?.toUpperCase() || 'İSTANBUL'}</u></strong></h6>
-            </div>
+            ${hitapVerisi.html}
             
             <h3 class="talimat-title text-center my-4">
                 <strong>BANKA TALİMATI</strong>
@@ -1257,10 +1290,8 @@ const generateVergiTalimatCikti = (gondericiFirma, gondericiBanka, tutar, acikla
         }
     }
 
-    const gondericiSubeAdi = gondericiBanka.sube_adi ? gondericiBanka.sube_adi.toUpperCase() : '';
-    const hasSubeSuffix = gondericiSubeAdi.includes('ŞUBE') || gondericiSubeAdi.includes('MÜDÜRLÜĞÜ');
-    const gondericiSubeHitap = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' ŞUBE MÜDÜRLÜĞÜ'}'NE`;
-    const gondericiSubeMetin = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' Şubesi'}`;
+    const hitapVerisi = buildHitapBlogu(gondericiBanka);
+    const gondericiSubeMetin = hitapVerisi.text;
 
     talimatCikti.innerHTML = `
         <div class="talimat-container">
@@ -1274,10 +1305,7 @@ const generateVergiTalimatCikti = (gondericiFirma, gondericiBanka, tutar, acikla
                 </div>
             </div>
             
-            <div class="talimat-addressee">
-                <h5><strong>${gondericiSubeHitap}</strong></h5>
-                <h6><strong><u>${gondericiBanka.sube_il?.toUpperCase() || 'İSTANBUL'}</u></strong></h6>
-            </div>
+            ${hitapVerisi.html}
             
             <h3 class="talimat-title text-center my-4">
                 <strong>${dinamikBaslik}</strong>

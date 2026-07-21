@@ -227,15 +227,17 @@ body {
   border: 1px solid #333;
   min-width: 4cm;
   min-height: 2cm;
-  padding: 8px;
+  padding: 4px 8px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .kase-metin {
-  font-weight: bold;
-  text-align: center;
+  font-weight: normal;
+  text-align: left;
+  color: #999;
+  font-size: 8pt;
 }
 
 /* =================================================================
@@ -264,6 +266,7 @@ body {
   vertical-align: middle;
   border: 1px solid #dee2e6;
   word-wrap: break-word;
+  font-size: 10px;
 }
 
 .multi-payment-table th {
@@ -274,19 +277,16 @@ body {
 }
 
 .multi-payment-table .iban-cell {
-  font-family: "Courier New", monospace;
-  font-size: 10px;
   letter-spacing: 0.5px;
   white-space: nowrap;
   line-height: 1;
   padding: 2px 1px !important;
   max-height: 20px;
   overflow: hidden;
+  font-variant-numeric: tabular-nums;
 }
 
 .multi-payment-table .swift-cell {
-  font-family: "Courier New", monospace;
-  font-size: 10px;
   text-align: center;
   padding: 2px 1px !important;
   line-height: 1;
@@ -301,7 +301,6 @@ body {
 }
 
 .multi-payment-table .company-name {
-  font-size: 10px;
   line-height: 1;
   padding: 2px 1px !important;
   max-height: 25px;
@@ -311,7 +310,6 @@ body {
 }
 
 .multi-payment-table .bank-name {
-  font-size: 10px;
   line-height: 1;
   padding: 2px 1px !important;
   max-height: 20px;
@@ -321,7 +319,6 @@ body {
 }
 
 .multi-payment-table .description-cell {
-  font-size: 9px;
   line-height: 1;
   padding: 2px 1px !important;
   max-height: 20px;
