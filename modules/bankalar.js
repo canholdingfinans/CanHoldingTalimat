@@ -64,7 +64,7 @@ export const checkIBANExists = (iban, excludeBankId = null) => {
 
     return firmalar.some(firma =>
         (firma.bankalar || []).some(banka =>
-            banka.iban === iban && banka.id != excludeBankId
+            banka.iban?.toUpperCase() === iban?.toUpperCase() && banka.id != excludeBankId
         )
     );
 };
