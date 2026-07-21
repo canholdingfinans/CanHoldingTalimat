@@ -319,6 +319,89 @@ const setupApplicationEvents = () => {
     
     // Excel upload events
     setupExcelUploadEvents();
+
+    // Sidebar Dynamic Drawer events
+    setupSidebarEvents();
+};
+
+/**
+ * Setup sidebar drawer and pinning events
+ */
+const setupSidebarEvents = () => {
+    const sidebarContainer = document.getElementById('sidebarContainer');
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebarPinBtn = document.getElementById('sidebarPinBtn');
+    
+    if (!sidebarContainer || !sidebarToggleBtn || !sidebarPinBtn) return;
+    
+    // Read initial state from localStorage
+    const isPinned = localStorage.getItem('sidebarPinned') === 'true';
+    let isExpanded = false; // Unpinned sidebar is closed by default
+    
+    const updateSidebarState = () => {
+        if (isPinned) {
+            sidebarContainer.className = 'sidebar-container border-end bg-white sidebar-expanded-pinned';
+            sidebarToggleBtn.classList.add('d-none');
+            sidebarPinBtn.classList.add('pinned');
+        } else {
+            sidebarPinBtn.classList.remove('pinned');
+            if (isExpanded) {
+                sidebarContainer.className = 'sidebar-container bg-white sidebar-expanded-overlay';
+                sidebarToggleBtn.classList.add('d-none');
+            } else {
+                sidebarContainer.className = 'sidebar-container bg-white sidebar-collapsed';
+                sidebarToggleBtn.classList.remove('d-none');
+            }
+        }
+    };
+    
+    // Initialize state
+    updateSidebarState();
+    
+    // Toggle button click (opens unpinned sidebar)
+    sidebarToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isExpanded = true;
+        updateSidebarState();
+    });
+    
+    // Pin button click
+    sidebarPinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const newState = !(localStorage.getItem('sidebarPinned') === 'true');
+        localStorage.setItem('sidebarPinned', newState);
+        // We read it directly in case of closure issues, but let's just reload it
+        const currentPin = localStorage.getItem('sidebarPinned') === 'true';
+        if (currentPin) {
+            // Pinning it leaves it expanded
+            isExpanded = true;
+        }
+        updateSidebarState();
+    });
+    
+    // Click outside to close (only if unpinned and expanded)
+    document.addEventListener('click', (e) => {
+        const currentPin = localStorage.getItem('sidebarPinned') === 'true';
+        if (!currentPin && isExpanded) {
+            // Check if click was inside sidebar or toggle button
+            const clickedInsideSidebar = sidebarContainer.contains(e.target);
+            const clickedToggleButton = sidebarToggleBtn.contains(e.target);
+            
+            // Allow clicks on bootstrap modals, dropdowns, etc to not close sidebar if they are somehow children, but mostly they are document body appended.
+            // Actually, if we click outside sidebar, close it.
+            if (!clickedInsideSidebar && !clickedToggleButton) {
+                // Ignore clicks on choices.js dropdowns which are appended to body
+                if (e.target.closest('.choices__list--dropdown')) return;
+                // Ignore clicks on modals
+                if (e.target.closest('.modal')) return;
+                // Ignore clicks on sweetalert
+                if (e.target.closest('.swal2-container')) return;
+                
+                isExpanded = false;
+                updateSidebarState();
+            }
+        }
+    });
 };
 
 /**

@@ -325,21 +325,93 @@ body {
 }
 
 /* =================================================================
-   SOL SÜTUN (SIDEBAR) & FIRMA LİSTESİ SCROLL MİMARİSİ
+   SOL SÜTUN (SIDEBAR) DYNAMIC DRAWER MİMARİSİ
    ================================================================= */
 
-@media (min-width: 768px) {
-  /* Sol sütunun sayfa aşağı kayarken ekranda asılı kalması (Sticky) */
-  .col-md-4.border-end {
-    position: sticky;
-    top: 20px;
-    height: fit-content;
-    /* Maksimum ekran boyutunu aşmaması için bir sınır */
-    max-height: calc(100vh - 40px);
-    display: flex;
-    flex-direction: column;
-  }
+.app-layout-wrapper {
+  overflow: hidden; /* Prevent horizontal scroll when unpinned */
+  position: relative;
+}
 
+.app-layout-row {
+  display: flex;
+  flex-wrap: nowrap;
+  min-height: calc(100vh - 100px);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Base Sidebar */
+.sidebar-container {
+  width: 350px;
+  flex-shrink: 0;
+  background: #fff;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), position 0.3s ease;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+/* States */
+.sidebar-collapsed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  transform: translateX(-100%);
+}
+
+.sidebar-expanded-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  transform: translateX(0);
+  box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+  height: 100%;
+}
+
+.sidebar-expanded-pinned {
+  position: relative;
+  transform: translateX(0);
+  /* No shadow needed when pinned, flows normally */
+  border-right: 1px solid #dee2e6;
+}
+
+/* Main Content */
+.main-content {
+  flex-grow: 1;
+  width: 100%;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 1rem;
+}
+
+/* Toggle Button */
+.sidebar-toggle-btn {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1040;
+  border-radius: 0 5px 5px 0;
+  padding: 15px 10px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+/* Pin Button Active State */
+#sidebarPinBtn.pinned {
+  color: #0d6efd !important;
+  transform: rotate(0deg);
+}
+#sidebarPinBtn:not(.pinned) {
+  transform: rotate(-45deg);
+}
+#sidebarPinBtn {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+@media (min-width: 768px) {
   /* Listenin kendisinin sınırlanıp içinden kaydırılabilir (Scrollable) yapılması */
   #firmaAccordion {
     overflow-y: auto;
@@ -385,6 +457,7 @@ body {
   #firmaTypeFilter,
   #addFirmaBtn,
   #firmaAccordion,
+  .sidebar-container,
   .modal,
   .dropdown,
   .alert {

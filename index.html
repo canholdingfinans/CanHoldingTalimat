@@ -113,12 +113,22 @@
         </div>
     </nav>
     
-    <div class="container-fluid">
-        <div class="row">
+    <!-- Sidebar Toggle Button (Hidden by default, shown when collapsed) -->
+    <button class="btn btn-primary sidebar-toggle-btn d-none shadow" id="sidebarToggleBtn" title="Firmaları Göster">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container-fluid app-layout-wrapper">
+        <div class="row app-layout-row">
             <!-- Sol Sütun -->
-            <div class="col-md-4 border-end">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>Grup Firmalar</h4>
+            <div class="sidebar-container border-end bg-white" id="sidebarContainer">
+                <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+                    <div class="d-flex align-items-center">
+                        <h4 class="mb-0">Grup Firmalar</h4>
+                        <button class="btn btn-sm btn-link text-secondary ms-2" id="sidebarPinBtn" title="Menüyü Sabitle">
+                            <i class="fas fa-thumbtack"></i>
+                        </button>
+                    </div>
                     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#firmaModal" id="addFirmaBtn">Firma Ekle</button>
                 </div>
                 <div class="mb-3">
@@ -137,7 +147,7 @@
                 </div>
             </div>
             <!-- Sağ Sütun -->
-            <div class="col-md-8">
+            <div class="main-content pt-2" id="mainContent">
                 <h4>Talimat Formu</h4>
                 <div class="alert alert-info" role="alert">
                     <i class="fas fa-info-circle"></i> Lütfen yukarıdaki <strong>"Talimat Türü"</strong> butonundan işlem yapmak istediğiniz talimat türünü seçiniz.
