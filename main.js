@@ -1042,8 +1042,7 @@ const createCariInstructionFromForm = async () => {
     
     // Check for duplicates (we'll skip this for multi-payments for now)
     
-    // Get next instruction number
-    const nextNumber = await talimatOperations.getNextInstructionNumber();
+    // No need to get next instruction number, the database handles it via IDENTITY column
     
     // Create separate instructions for each payment (for now)
     // In a more advanced implementation, we might store all payments in a single record
@@ -1060,8 +1059,7 @@ const createCariInstructionFromForm = async () => {
             para_birimi: gondericiBanka.para_birimi,
             aciklama: payment.aciklama,
             talimat_tarihi: talimatTarihi,
-            talimat_turu: 'Cari Hesap Ödemesi',
-            instruction_number: nextNumber + results.length
+            talimat_turu: 'Cari Hesap Ödemesi'
         };
         
         console.log('Creating instruction with data:', instructionData);

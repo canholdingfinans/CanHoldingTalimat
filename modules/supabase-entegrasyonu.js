@@ -273,28 +273,6 @@ export const bankaOperations = {
  * Payment instruction operations
  */
 export const talimatOperations = {
-    // Get next instruction number
-    async getNextInstructionNumber() {
-        // Check if supabaseClient is properly initialized
-        if (!supabaseClient || !supabaseClient.from) {
-            console.warn('Supabase client not initialized, returning default number');
-            return 1;
-        }
-        
-        const { data: lastInstruction, error: lastError } = await supabaseClient
-            .from('payment_instructions')
-            .select('instruction_number')
-            .order('instruction_number', { ascending: false })
-            .limit(1);
-            
-        let nextNumber = 1;
-        if (!lastError && lastInstruction && lastInstruction.length > 0) {
-            nextNumber = lastInstruction[0].instruction_number + 1;
-        }
-
-        return nextNumber;
-    },
-
     // Create havale/EFT instruction
     async createHavaleEFT(instructionData) {
         // Check if supabaseClient is properly initialized
