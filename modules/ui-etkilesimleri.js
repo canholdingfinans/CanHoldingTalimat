@@ -6,6 +6,7 @@ import { getFirmalar, findFirmaById } from './firmalar.js';
 import { getBanksForFirma, getBankDisplayName, formatIBAN, checkCurrencyCompatibility } from './bankalar.js';
 import { instructionTypes, getCategoryInfo, getTodayString } from './talimatlar.js';
 import { validateSWIFTCode } from './validasyon.js';
+import { BANKA_LISTESI, KATEGORI_SIRASI, getCanonicalBankaAdi } from './banka-listesi.js';
 
 // Global variables for modals and UI elements
 let firmaModal, bankaModal;
@@ -190,7 +191,13 @@ const setupEventListeners = () => {
     if (bankaForm) {
         bankaForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            window.dispatchEvent(new CustomEvent('bankaFormSubmit', { detail: new FormData(e.target) }));
+            const formData = new FormData(e.target);
+            const bankaAdiVal = formData.get('bankaAdi');
+            if (!bankaAdiVal || bankaAdiVal.trim() === '') {
+                alert('Lütfen bir Banka Adı seçiniz.');
+                return;
+            }
+            window.dispatchEvent(new CustomEvent('bankaFormSubmit', { detail: formData }));
         });
     }
     
@@ -1492,6 +1499,46 @@ export const showFirmaModal = (firma = null) => {
 };
 
 /**
+ * Populate bank name select with Choices.js
+ */
+export const populateBankaAdiSelect = () => {
+    const select = document.getElementById('bankaAdi');
+    if (select) {
+        if (choicesInstances['bankaAdi']) {
+            choicesInstances['bankaAdi'].destroy();
+            delete choicesInstances['bankaAdi'];
+        }
+        
+        select.innerHTML = '<option value="">Seçiniz...</option>';
+        
+        KATEGORI_SIRASI.forEach(kategori => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = kategori;
+            
+            const bankalar = BANKA_LISTESI.filter(b => b.kategori === kategori);
+            bankalar.forEach(banka => {
+                const option = new Option(banka.banka_adi, banka.banka_adi);
+                optgroup.appendChild(option);
+            });
+            
+            if (bankalar.length > 0) {
+                select.appendChild(optgroup);
+            }
+        });
+        
+        if (window.Choices) {
+            choicesInstances['bankaAdi'] = new Choices(select, {
+                searchEnabled: true,
+                searchFloor: 3,
+                itemSelectText: 'Seçmek için tıklayın',
+                noResultsText: 'Sonuç bulunamadı',
+                noChoicesText: 'Seçenek bulunmuyor'
+            });
+        }
+    }
+};
+
+/**
  * Show modal for bank editing
  */
 export const showBankaModal = (firmaId, banka = null) => {
@@ -1504,6 +1551,9 @@ export const showBankaModal = (firmaId, banka = null) => {
     
     const form = document.getElementById('bankaForm');
     if (form) form.reset();
+    
+    // Setup Banka Adi Select
+    populateBankaAdiSelect();
     
     const bankaFirmaIdElement = document.getElementById('bankaFirmaId');
     if (bankaFirmaIdElement) bankaFirmaIdElement.value = firmaId;
@@ -1518,8 +1568,20 @@ export const showBankaModal = (firmaId, banka = null) => {
         const hesapNoElement = document.getElementById('hesapNo');
         const swiftKoduElement = document.getElementById('swiftKodu');
         
+        
         if (bankaIdElement) bankaIdElement.value = banka.id;
-        if (bankaAdiElement) bankaAdiElement.value = banka.banka_adi;
+        if (bankaAdiElement) {
+            const canonicalName = getCanonicalBankaAdi(banka.banka_adi);
+            if (canonicalName) {
+                // If Choices is active, we should set it by value
+                if (choicesInstances['bankaAdi']) {
+                    choicesInstances['bankaAdi'].setChoiceByValue(canonicalName);
+                } else {
+                    bankaAdiElement.value = canonicalName;
+                }
+            }
+            // If not found, we leave it empty (default) to force user to choose a valid one
+        }
         if (subeAdiElement) subeAdiElement.value = banka.sube_adi || '';
         if (subeIlElement) subeIlElement.value = banka.sube_il || '';
         if (ibanElement) ibanElement.value = banka.iban;

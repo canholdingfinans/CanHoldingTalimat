@@ -6,6 +6,7 @@
 import { bankaOperations } from './supabase-entegrasyonu.js';
 import { validateIBAN, validateBankName, validateSWIFTCode, validateIBANExtended } from './validasyon.js';
 import { findFirmaById, addBankToFirma, updateBankInFirma, removeBankFromFirma, getFirmalar } from './firmalar.js';
+import { getCanonicalBankaAdi } from './banka-listesi.js';
 
 /**
  * Get available currency options
@@ -102,7 +103,7 @@ export const addBanka = async (bankData) => {
         }
 
         // Validate and clean IBAN
-        const cleanIban = bankData.iban.replace(/\s+/g, '');
+        const cleanIban = bankData.iban.replace(/\s+/g, '').toUpperCase();
         const ibanValidation = validateIBAN(cleanIban);
         if (!ibanValidation) {
             throw new Error('IBAN numarası 26 haneli olmalıdır.');
@@ -176,7 +177,7 @@ export const updateBanka = async (bankId, bankData) => {
         }
 
         // Validate and clean IBAN
-        const cleanIban = bankData.iban.replace(/\s+/g, '');
+        const cleanIban = bankData.iban.replace(/\s+/g, '').toUpperCase();
         const ibanValidation = validateIBAN(cleanIban);
         if (!ibanValidation) {
             throw new Error('IBAN numarası 26 haneli olmalıdır.');
@@ -246,6 +247,12 @@ export const addBankaBulk = async (bankaSatirlari, firmaMap) => {
             hatali.push({ satirNo: satir.satirNo, sebep: 'Banka Adı zorunludur.' });
             continue;
         }
+        
+        const canonicalBankaAdi = getCanonicalBankaAdi(satir.banka_adi);
+        if (!canonicalBankaAdi) {
+            hatali.push({ satirNo: satir.satirNo, sebep: `Banka adı tanınmadı: '${satir.banka_adi}'. Lütfen kanonik listeden birini kullanın.` });
+            continue;
+        }
         const isGrup = firma.turu === 'grup';
         if (isGrup && (!satir.sube_adi?.trim() || !satir.sube_il?.trim())) {
             hatali.push({ satirNo: satir.satirNo, sebep: 'Grup firmaları için Şube Adı ve Şube İli zorunludur.' });
@@ -277,7 +284,7 @@ export const addBankaBulk = async (bankaSatirlari, firmaMap) => {
         gorulenIbanlar.add(cleanIban);
         gecerliSatirlar.push({
             firm_id: firma.id,
-            banka_adi: satir.banka_adi.trim(),
+            banka_adi: canonicalBankaAdi,
             sube_adi: satir.sube_adi?.trim() || null,
             sube_il: satir.sube_il?.trim() || null,
             iban: cleanIban,
