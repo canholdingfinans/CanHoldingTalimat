@@ -146,8 +146,9 @@ body {
   letter-spacing: 0.5px;
 }
 
-.talimat-header .header-info {
+.talimat-header .talimat-tarih-no {
   text-align: right;
+  white-space: nowrap;
   font-size: 0.9rem;
 }
 
@@ -209,6 +210,11 @@ body {
 
 .saygilar-bolumu {
   width: 45%;
+  text-align: left !important;
+}
+
+.saygilar-bolumu p, .saygilar-bolumu .firma-adi {
+  text-align: left !important;
 }
 
 .kase-alani {
@@ -271,7 +277,7 @@ body {
   font-family: "Courier New", monospace;
   font-size: 10px;
   letter-spacing: 0.5px;
-  word-break: break-all;
+  white-space: nowrap;
   line-height: 1;
   padding: 2px 1px !important;
   max-height: 20px;

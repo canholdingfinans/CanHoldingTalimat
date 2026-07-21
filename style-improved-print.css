@@ -76,6 +76,11 @@
         font-weight: bold !important;
     }
 
+    .talimat-tarih-no {
+        white-space: nowrap !important;
+        text-align: right !important;
+    }
+
     .talimat-title {
         font-size: 11pt !important;
         margin: 8pt 0 !important;
@@ -140,7 +145,7 @@
 
     .iban-cell {
         word-break: normal !important;
-        white-space: normal !important;
+        white-space: nowrap !important;
     }
 
     /* FOOTER FIX (BULGU 4) */

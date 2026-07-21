@@ -1202,7 +1202,7 @@ const generateHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirm
             </div>
             
             <div class="talimat-footer mt-4">
-                <div class="saygılar-bolumu">
+                <div class="saygilar-bolumu">
                     <p><strong>Saygılarımızla,</strong></p>
                     <div class="firma-imza mt-3">
                         <div class="firma-adi">
@@ -1334,7 +1334,7 @@ const generateVergiTalimatCikti = (gondericiFirma, gondericiBanka, tutar, acikla
             </div>
             
             <div class="talimat-footer mt-4">
-                <div class="saygılar-bolumu">
+                <div class="saygilar-bolumu">
                     <p><strong>Saygılarımızla,</strong></p>
                     <div class="firma-imza mt-3">
                         <div class="firma-adi">
