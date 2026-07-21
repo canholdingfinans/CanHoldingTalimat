@@ -325,6 +325,47 @@ body {
 }
 
 /* =================================================================
+   SOL SÜTUN (SIDEBAR) & FIRMA LİSTESİ SCROLL MİMARİSİ
+   ================================================================= */
+
+@media (min-width: 768px) {
+  /* Sol sütunun sayfa aşağı kayarken ekranda asılı kalması (Sticky) */
+  .col-md-4.border-end {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+    /* Maksimum ekran boyutunu aşmaması için bir sınır */
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Listenin kendisinin sınırlanıp içinden kaydırılabilir (Scrollable) yapılması */
+  #firmaAccordion {
+    overflow-y: auto;
+    /* Üst menü, başlık ve filtre alanları çıktıktan sonra kalan yüksekliği hesapla */
+    max-height: calc(100vh - 250px);
+    padding-right: 5px; /* Scrollbar'ın içeriğe yapışmasını önlemek için */
+  }
+}
+
+/* 🎨 Zarif Custom Scrollbar (Sadece firma listesi için) */
+#firmaAccordion::-webkit-scrollbar {
+  width: 6px;
+}
+#firmaAccordion::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+#firmaAccordion::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+#firmaAccordion::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* =================================================================
    PRINT STYLES - ULTRA SIMPLE APPROACH
    ================================================================= */
 
