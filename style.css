@@ -202,7 +202,34 @@ body {
 
 .talimat-footer {
   margin-top: 50px;
-  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.saygilar-bolumu {
+  width: 45%;
+}
+
+.kase-alani {
+  width: 45%;
+  display: flex;
+  justify-content: center;
+}
+
+.kase-cerceve {
+  border: 1px solid #333;
+  min-width: 4cm;
+  min-height: 2cm;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kase-metin {
+  font-weight: bold;
+  text-align: center;
 }
 
 /* =================================================================

@@ -4,7 +4,7 @@
  */
 
 import { fetchFirmalar, addFirma, updateFirma, deleteFirma, findFirmaById, addFirmaBulk } from './modules/firmalar.js';
-import { addBanka, updateBanka, deleteBanka, addBankaBulk } from './modules/bankalar.js';
+import { addBanka, updateBanka, deleteBanka, addBankaBulk, formatIBAN } from './modules/bankalar.js';
 import { createHavaleEFTInstruction, createCariInstruction, createVergiInstruction as createVergiInstructionModule, formatInstructionNumber, formatCurrency, formatDate, printInstruction, instructionTypes } from './modules/talimatlar.js';
 import { validateIBAN, validateCompanyTypeRequirements, validateHavaleEFTForm, validateCurrencyMatch } from './modules/validasyon.js';
 import { initializeUI, renderFirmaAccordion, showNotification, showFirmaModal, showBankaModal, hideModals, refreshUI, getCurrentInstructionType } from './modules/ui-etkilesimleri.js';
@@ -69,60 +69,40 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
             .join(' + ');
     }
     
+    // Determine if we need SWIFT column
+    const hasForeignCurrency = payments.some(p => p.aliciBanka?.para_birimi !== 'TRY');
+
     // Generate payment rows with optimized text handling
     const paymentRows = payments.map((payment, index) => {
         const formattedAmount = formatCurrency(payment.tutar, payment.aliciBanka?.para_birimi || gondericiBanka.para_birimi);
         const swiftCode = payment.aliciBanka?.swift_kodu || '-';
         const description = payment.aciklama || '-';
         
-        // Ultra-aggressive text truncation for 8+ payments
-        let companyNameLimit, bankNameLimit, descriptionLimit;
-        
-        if (paymentCount === 8) {
-            // Ultra-dense: extremely short text for exactly 8 payments
-            companyNameLimit = 6;  // Even shorter for 8 payments
-            bankNameLimit = 4;     // Even shorter for 8 payments
-            descriptionLimit = 5;  // Even shorter for 8 payments
-        } else if (paymentCount >= 8) {
-            // Ultra-dense: extremely short text for 8+ payments
-            companyNameLimit = 8;  // Reduced from 10
-            bankNameLimit = 5;     // Reduced from 6
-            descriptionLimit = 6;  // Reduced from 8
-        } else if (paymentCount >= 6) {
-            // Dense: short text for 6-7 payments
-            companyNameLimit = 10;  // Reduced from 12
-            bankNameLimit = 6;     // Reduced from 8
-            descriptionLimit = 10; // Reduced from 12
-        } else {
-            // Normal: moderate text for 1-5 payments
-            companyNameLimit = 15;  // Reduced from 18
-            bankNameLimit = 8;     // Reduced from 10
-            descriptionLimit = 15;  // Reduced from 18
-        }
-        
         const companyName = payment.aliciFirma?.name || 'N/A';
         const bankName = payment.aliciBanka?.banka_adi || 'N/A';
-        
-        // Modified company name truncation - only truncate legal entity suffixes
-        const shortCompanyName = shortCompanyNameWithLegalEntities(companyName, companyNameLimit);
-        // Modified bank name display - show full names
-        const shortBankName = bankName; // No truncation for bank names
-        const shortDescription = description.length > descriptionLimit ? 
-            description.substring(0, descriptionLimit - 3) + '...' : description;
         
         return `
             <tr>
                 <td class="text-center">${index + 1}</td>
-                <td class="company-name" title="${companyName}">${shortCompanyName}</td>
-                <td class="bank-name" title="${bankName}">${shortBankName}</td>
-                <td class="iban-cell"><small>${payment.aliciBanka?.iban || 'N/A'}</small></td>
-                <td class="swift-cell"><small>${swiftCode}</small></td>
-                <td class="description-cell" title="${description}">${shortDescription}</td>
+                <td class="company-name" title="${companyName}">${companyName}</td>
+                <td class="bank-name" title="${bankName}">${bankName}</td>
+                <td class="iban-cell"><small>${formatIBAN(payment.aliciBanka?.iban) || 'N/A'}</small></td>
+                ${hasForeignCurrency ? `<td class="swift-cell"><small>${swiftCode}</small></td>` : ''}
+                <td class="description-cell" title="${description}">${description}</td>
                 <td class="amount-cell"><strong>${formattedAmount}</strong></td>
             </tr>
         `;
     }).join('');
 
+    const gondericiSubeAdi = gondericiBanka.sube_adi ? gondericiBanka.sube_adi.toUpperCase() : '';
+    const hasSubeSuffix = gondericiSubeAdi.includes('ŞUBE') || gondericiSubeAdi.includes('MÜDÜRLÜĞÜ');
+    const gondericiSubeHitap = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' ŞUBE MÜDÜRLÜĞÜ'}'NE`;
+
+    const gondericiSubeMetin = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' Şubesi'}`;
+
+    const widthUnvan = hasForeignCurrency ? '24%' : '28%';
+    const widthIban = hasForeignCurrency ? '21%' : '24%';
+    
     talimatCikti.innerHTML = `
         <div class="talimat-container ${containerClass}">
             <div class="talimat-header">
@@ -136,7 +116,7 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
             </div>
             
             <div class="talimat-addressee">
-                <h5><strong>${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi} ŞUBE MÜDÜRLÜĞÜ'NE</strong></h5>
+                <h5><strong>${gondericiSubeHitap}</strong></h5>
                 <h6><strong><u>${gondericiBanka.sube_il?.toUpperCase() || 'İSTANBUL'}</u></strong></h6>
             </div>
             
@@ -146,8 +126,8 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
             
             <div class="talimat-body">
                 <p class="talimat-metin">
-                    ${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi} Şubesi nezdindeki 
-                    <strong>${gondericiBanka.iban}</strong> numaralı <strong>${gondericiBanka.para_birimi}</strong> 
+                    ${gondericiSubeMetin} nezdindeki 
+                    <strong>${formatIBAN(gondericiBanka.iban)}</strong> numaralı <strong>${gondericiBanka.para_birimi}</strong> 
                     hesabımızdan, aşağıda bilgileri yer alan alıcılara belirtilen tutarların 
                     <strong>Havale/EFT</strong> ile gönderilmesini rica ederiz.
                 </p>
@@ -162,11 +142,11 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
                     <thead class="table-primary">
                         <tr>
                             <th class="text-center" style="width: 3%;">#</th>
-                            <th style="width: 20%;">UNVAN</th>
-                            <th style="width: 10%;">BANKA</th>
-                            <th style="width: 32%;">IBAN</th>
-                            <th style="width: 8%;">SWIFT</th>
-                            <th style="width: 17%;">AÇIKLAMA</th>
+                            <th style="width: ${widthUnvan};">UNVAN</th>
+                            <th style="width: 15%;">BANKA</th>
+                            <th style="width: ${widthIban};">IBAN</th>
+                            ${hasForeignCurrency ? `<th style="width: 8%;">SWIFT</th>` : ''}
+                            <th style="width: 20%;">AÇIKLAMA</th>
                             <th style="width: 10%;">TUTAR</th>
                         </tr>
                     </thead>
@@ -175,7 +155,7 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
                     </tbody>
                     <tfoot class="table-warning">
                         <tr>
-                            <td colspan="6" class="text-end"><strong>TOPLAM:</strong></td>
+                            <td colspan="${hasForeignCurrency ? '6' : '5'}" class="text-end"><strong>TOPLAM:</strong></td>
                             <td class="amount-cell"><strong>${formattedTotals}</strong></td>
                         </tr>
                     </tfoot>
@@ -1140,6 +1120,11 @@ const generateHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirm
     const formattedTutar = formatCurrency(tutar, gondericiBanka.para_birimi);
     const displayTalimatNo = formatInstructionNumber(talimatNo);
 
+    const gondericiSubeAdi = gondericiBanka.sube_adi ? gondericiBanka.sube_adi.toUpperCase() : '';
+    const hasSubeSuffix = gondericiSubeAdi.includes('ŞUBE') || gondericiSubeAdi.includes('MÜDÜRLÜĞÜ');
+    const gondericiSubeHitap = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' ŞUBE MÜDÜRLÜĞÜ'}'NE`;
+    const gondericiSubeMetin = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' Şubesi'}`;
+
     talimatCikti.innerHTML = `
         <div class="talimat-container">
             <div class="talimat-header">
@@ -1153,7 +1138,7 @@ const generateHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirm
             </div>
             
             <div class="talimat-addressee">
-                <h5><strong>${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi} ŞUBE MÜDÜRLÜĞÜ'NE</strong></h5>
+                <h5><strong>${gondericiSubeHitap}</strong></h5>
                 <h6><strong><u>${gondericiBanka.sube_il?.toUpperCase() || 'İSTANBUL'}</u></strong></h6>
             </div>
             
@@ -1163,8 +1148,8 @@ const generateHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirm
             
             <div class="talimat-body">
                 <p class="talimat-metin">
-                    ${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi} Şubesi nezdindeki 
-                    <strong>${gondericiBanka.iban}</strong> numaralı <strong>${gondericiBanka.para_birimi}</strong> 
+                    ${gondericiSubeMetin} nezdindeki 
+                    <strong>${formatIBAN(gondericiBanka.iban)}</strong> numaralı <strong>${gondericiBanka.para_birimi}</strong> 
                     hesabımızdan, aşağıda bilgileri yer alan alıcıya belirtilen tutarın 
                     <strong>Havale/EFT</strong> ile gönderilmesini rica ederiz.
                 </p>
@@ -1194,7 +1179,7 @@ const generateHavaleEFTTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirm
                         </tr>
                         <tr>
                             <th class="table-light">Alıcı IBAN</th>
-                            <td><code>${aliciBanka.iban}</code></td>
+                            <td><code>${formatIBAN(aliciBanka.iban)}</code></td>
                         </tr>
                         ${aliciBanka.swift_kodu ? `
                         <tr>
@@ -1257,14 +1242,25 @@ const generateVergiTalimatCikti = (gondericiFirma, gondericiBanka, tutar, acikla
     // Determine the appropriate field name and value based on instruction type
     let specialFieldName = 'Tahakkuk No';
     let specialFieldValue = tahakkukNo || '-';
+    let dinamikBaslik = 'VERGİ ÖDEMESİ TALİMATI';
+    let dinamikMetin = 'vergi ödemesinin';
     
     if (instructionConfig) {
         if (instructionConfig.category === 'sgk') {
             specialFieldName = 'SGK Sicil No';
+            dinamikBaslik = 'SGK ÖDEMESİ TALİMATI';
+            dinamikMetin = 'sgk ödemesinin';
         } else if (instructionConfig.category === 'gumruk') {
             specialFieldName = 'Gümrük Beyanname No';
+            dinamikBaslik = 'GÜMRÜK ÖDEMESİ TALİMATI';
+            dinamikMetin = 'gümrük ödemesinin';
         }
     }
+
+    const gondericiSubeAdi = gondericiBanka.sube_adi ? gondericiBanka.sube_adi.toUpperCase() : '';
+    const hasSubeSuffix = gondericiSubeAdi.includes('ŞUBE') || gondericiSubeAdi.includes('MÜDÜRLÜĞÜ');
+    const gondericiSubeHitap = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' ŞUBE MÜDÜRLÜĞÜ'}'NE`;
+    const gondericiSubeMetin = `${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi}${hasSubeSuffix ? '' : ' Şubesi'}`;
 
     talimatCikti.innerHTML = `
         <div class="talimat-container">
@@ -1279,19 +1275,19 @@ const generateVergiTalimatCikti = (gondericiFirma, gondericiBanka, tutar, acikla
             </div>
             
             <div class="talimat-addressee">
-                <h5><strong>${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi} ŞUBE MÜDÜRLÜĞÜ'NE</strong></h5>
+                <h5><strong>${gondericiSubeHitap}</strong></h5>
                 <h6><strong><u>${gondericiBanka.sube_il?.toUpperCase() || 'İSTANBUL'}</u></strong></h6>
             </div>
             
             <h3 class="talimat-title text-center my-4">
-                <strong>VERGİ ÖDEMESİ TALİMATI</strong>
+                <strong>${dinamikBaslik}</strong>
             </h3>
             
             <div class="talimat-body">
                 <p class="talimat-metin">
-                    ${gondericiBanka.banka_adi} ${gondericiBanka.sube_adi} Şubesi nezdindeki 
-                    <strong>${gondericiBanka.iban}</strong> numaralı <strong>${gondericiBanka.para_birimi}</strong> 
-                    hesabımızdan, aşağıda bilgileri yer alan vergi ödemesinin yapılmasını rica ederiz.
+                    ${gondericiSubeMetin} nezdindeki 
+                    <strong>${formatIBAN(gondericiBanka.iban)}</strong> numaralı <strong>${gondericiBanka.para_birimi}</strong> 
+                    hesabımızdan, aşağıda bilgileri yer alan ${dinamikMetin} yapılmasını rica ederiz.
                 </p>
             </div>
             
