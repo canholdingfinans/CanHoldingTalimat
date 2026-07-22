@@ -2924,7 +2924,8 @@ CREATE TABLE public.payment_instructions (
     sgk_sicil_no text,
     gumruk_beyanname_no text,
     tahakkuk_no text,
-    vergi_donem text
+    vergi_donem text,
+    created_at timestamp with time zone DEFAULT now()
 );
 
 
