@@ -159,25 +159,25 @@
     }
 
     .saygilar-bolumu {
-        width: 45% !important;
+        flex: 1 !important;
         text-align: left !important;
+        padding-right: 15pt !important;
     }
 
     .kase-alani {
-        width: 45% !important;
         display: flex !important;
         justify-content: center !important;
     }
 
     .kase-cerceve {
         border: 1pt solid black !important;
-        min-width: 4cm !important;
-        min-height: 2cm !important;
+        min-width: 10cm !important;
+        min-height: 4.5cm !important;
     }
 
     .kase-metin {
         font-weight: normal !important;
-        text-align: left !important;
+        text-align: center !important;
         color: #555 !important;
         font-size: 8pt !important;
         margin-bottom: 2pt !important;

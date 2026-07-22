@@ -209,8 +209,9 @@ body {
 }
 
 .saygilar-bolumu {
-  width: 45%;
+  flex: 1; /* Takes remaining space to not overlap */
   text-align: left !important;
+  padding-right: 15px; /* Breathing room from kaşe */
 }
 
 .saygilar-bolumu p, .saygilar-bolumu .firma-adi {
@@ -218,20 +219,20 @@ body {
 }
 
 .kase-alani {
-  width: 45%;
+  /* removed 45% width, let it auto-size to contents */
   display: flex;
   justify-content: center;
 }
 
 .kase-cerceve {
   border: 1px solid #333;
-  min-width: 4cm;
-  min-height: 2cm;
+  min-width: 10cm; /* Big box */
+  min-height: 4.5cm;
 }
 
 .kase-metin {
   font-weight: normal;
-  text-align: left;
+  text-align: center; /* Centered above box */
   color: #555;
   font-size: 8pt;
   margin-bottom: 2px;
