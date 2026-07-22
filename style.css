@@ -394,16 +394,32 @@ body {
   box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
 }
 
-/* Pin Button Active State */
-#sidebarPinBtn.pinned {
-  color: #0d6efd !important;
-  transform: rotate(0deg);
+/* Pin Button Animations (Jelly Pop) */
+@keyframes pinPop {
+  0% { transform: rotate(-45deg) scale(1); }
+  50% { transform: rotate(15deg) scale(1.3); }
+  100% { transform: rotate(0deg) scale(1); }
 }
-#sidebarPinBtn:not(.pinned) {
-  transform: rotate(-45deg);
+
+@keyframes unpinPop {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(-60deg) scale(1.2); }
+  100% { transform: rotate(-45deg) scale(1); }
 }
+
 #sidebarPinBtn {
-  transition: transform 0.2s ease, color 0.2s ease;
+  transition: color 0.3s ease;
+  transform-origin: center bottom;
+}
+
+#sidebarPinBtn.pinned i {
+  animation: pinPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  color: #0d6efd !important;
+}
+
+#sidebarPinBtn:not(.pinned) i {
+  animation: unpinPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  color: #6c757d;
 }
 
 @media (min-width: 768px) {

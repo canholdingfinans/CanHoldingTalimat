@@ -334,12 +334,16 @@ const setupSidebarEvents = () => {
     
     if (!sidebarContainer || !sidebarToggleBtn || !sidebarPinBtn) return;
     
-    // Read initial state from localStorage
-    const isPinned = localStorage.getItem('sidebarPinned') === 'true';
     let isExpanded = false; // Unpinned sidebar is closed by default
     
+    // Read initial state to set expanded correctly on load
+    if (localStorage.getItem('sidebarPinned') === 'true') {
+        isExpanded = true;
+    }
+    
     const updateSidebarState = () => {
-        if (isPinned) {
+        const currentPin = localStorage.getItem('sidebarPinned') === 'true';
+        if (currentPin) {
             sidebarContainer.className = 'sidebar-container border-end bg-white sidebar-expanded-pinned';
             sidebarToggleBtn.classList.add('d-none');
             sidebarPinBtn.classList.add('pinned');
