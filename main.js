@@ -8,7 +8,7 @@ import { addBanka, updateBanka, deleteBanka, addBankaBulk, formatIBAN } from './
 import { createHavaleEFTInstruction, createCariInstruction, createVergiInstruction as createVergiInstructionModule, formatInstructionNumber, formatCurrency, formatDate, printInstruction, instructionTypes } from './modules/talimatlar.js';
 import { validateIBAN, validateCompanyTypeRequirements, validateHavaleEFTForm, validateCurrencyMatch } from './modules/validasyon.js';
 import { initializeUI, renderFirmaAccordion, showNotification, showFirmaModal, showBankaModal, hideModals, refreshUI, getCurrentInstructionType } from './modules/ui-etkilesimleri.js';
-import { talimatOperations } from './modules/supabase-entegrasyonu.js';
+import { talimatOperations, supabaseClient } from './modules/supabase-entegrasyonu.js';
 
 /**
  * Hitap bloğunu oluşturur (Banka Adı, İl, Şube)
@@ -243,12 +243,108 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
 window.generateMultiPaymentHavaleEFTTalimatCikti = generateMultiPaymentHavaleEFTTalimatCikti;
 
 /**
+ * Auth initialization and state management
+ */
+const initAuth = async () => {
+    const loginContainer = document.getElementById('loginContainer');
+    const appContainer = document.getElementById('appContainer');
+    
+    // Auth state listener
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth state changed:', event);
+        
+        if (session) {
+            // Logged in
+            loginContainer.style.display = 'none';
+            appContainer.style.display = 'block';
+            
+            // Initialize app data if not already loaded
+            if (document.querySelectorAll('.firma-accordion-item').length === 0) {
+                console.log('Initializing UI...');
+                initializeUI();
+                console.log('Loading initial data...');
+                await loadInitialData();
+            }
+        } else {
+            // Logged out
+            loginContainer.style.display = 'flex';
+            appContainer.style.display = 'none';
+        }
+    });
+
+    // Check initial session
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+        loginContainer.style.display = 'none';
+        appContainer.style.display = 'block';
+        
+        console.log('Initializing UI...');
+        initializeUI();
+        console.log('Loading initial data...');
+        await loadInitialData();
+    } else {
+        loginContainer.style.display = 'flex';
+        appContainer.style.display = 'none';
+    }
+};
+
+/**
  * Application initialization
  */
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         console.log('=== HAVALE_EFT_TALIMATI Application Starting ===');
-        console.log('Current URL:', window.location.href);
+        
+        // Setup login form handler
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const usernameInput = document.getElementById('loginUsername').value.trim();
+                const passwordInput = document.getElementById('loginPassword').value;
+                const loginBtn = document.getElementById('loginBtn');
+                const errorMsg = document.getElementById('loginErrorMsg');
+                
+                // Hide previous errors and show loading state
+                errorMsg.style.display = 'none';
+                const originalBtnText = loginBtn.innerHTML;
+                loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Giriş yapılıyor...';
+                loginBtn.disabled = true;
+                
+                // Format email
+                const email = usernameInput.includes('@') ? usernameInput : `${usernameInput}@canholding.local`;
+                
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: passwordInput
+                });
+                
+                if (error) {
+                    // Show user friendly error message
+                    errorMsg.textContent = 'Kullanıcı adı veya şifre hatalı. Lütfen tekrar deneyin.';
+                    errorMsg.style.display = 'block';
+                    
+                    // Reset button state
+                    loginBtn.innerHTML = originalBtnText;
+                    loginBtn.disabled = false;
+                } else {
+                    // Success! onAuthStateChange will handle the UI transition
+                    loginForm.reset();
+                    loginBtn.innerHTML = originalBtnText;
+                    loginBtn.disabled = false;
+                }
+            });
+        }
+        
+        // Setup logout button handler
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await supabaseClient.auth.signOut();
+                showNotification('Başarıyla çıkış yapıldı.', 'success');
+            });
+        }
         
         // Check if required elements exist
         const requiredElements = [
@@ -264,13 +360,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log(`Element ${id}:`, element ? 'Found' : 'NOT FOUND');
         });
         
-        // Initialize UI components
-        console.log('Initializing UI...');
-        initializeUI();
-        
-        // Fetch initial data
-        console.log('Loading initial data...');
-        await loadInitialData();
+        // Initialize authentication flow instead of loading data directly
+        await initAuth();
         
         // Setup application event listeners
         console.log('Setting up application events...');

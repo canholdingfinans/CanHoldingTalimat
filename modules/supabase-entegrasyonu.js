@@ -446,3 +446,5 @@ export const talimatOperations = {
         }
     }
 };
+
+export { supabaseClient };

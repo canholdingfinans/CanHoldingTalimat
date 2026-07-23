@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Talimat Arşivi - Havale/EFT Talimat Sistemi</title>
     <!-- Bootstrap CSS with fallback -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" 
-          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
-          crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
-          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
-          crossorigin="anonymous" 
-          referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css">
     <style>
         .filter-section {
@@ -20,52 +19,62 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
+
         .instruction-card {
             transition: transform 0.2s;
         }
+
         .instruction-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
         .status-badge {
             font-size: 0.8em;
         }
+
         .view-toggle {
             margin-bottom: 20px;
         }
+
         .list-view .instruction-row {
             border-bottom: 1px solid #dee2e6;
             padding: 10px 0;
         }
+
         .list-view .instruction-row:last-child {
             border-bottom: none;
         }
+
         .list-view .instruction-row:hover {
             background-color: #f8f9fa;
         }
+
         .btn-delete {
             color: #dc3545;
             border-color: #dc3545;
         }
+
         .btn-delete:hover {
             background-color: #dc3545;
             color: white;
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation Menu -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom mb-4">
         <div class="container-fluid d-flex flex-wrap align-items-center">
             <a href="index.html" class="navbar-brand mb-0 h1 flex-shrink-0">Havale/EFT Talimat Sistemi</a>
-            
+
             <!-- Archive Button (Active) -->
             <div class="navbar-middle order-lg-2 flex-shrink-0 mx-3">
                 <a href="arsiv.html" class="btn btn-secondary active" id="arsivBtn">
                     <i class="fas fa-archive"></i> Talimat Arşivi
                 </a>
             </div>
-            
+
             <!-- Back to Main Button -->
             <div class="navbar-right order-lg-3 flex-shrink-0">
                 <a href="index.html" class="btn btn-outline-primary">
@@ -74,12 +83,12 @@
             </div>
         </div>
     </nav>
-    
+
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 <h2 class="mb-4"><i class="fas fa-archive me-2"></i>Talimat Arşivi</h2>
-                
+
                 <!-- Filter Section -->
                 <div class="filter-section">
                     <div class="row align-items-end">
@@ -122,7 +131,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- View Toggle -->
                 <div class="view-toggle d-flex justify-content-end mb-3">
                     <div class="btn-group" role="group">
@@ -134,7 +143,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Instructions List -->
                 <div class="row" id="instructionsContainer">
                     <!-- Instructions will be loaded here dynamically -->
@@ -148,7 +157,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Detail Modal -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -166,7 +175,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -188,12 +197,12 @@
     </div>
 
     <!-- Bootstrap JS with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
-            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
-            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
     <!-- Supabase JS with fallback -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
-    
+
     <script type="module">
         // DOM Elements
         const instructionsContainer = document.getElementById('instructionsContainer');
@@ -210,18 +219,18 @@
         const deleteModalElement = document.getElementById('deleteModal');
         const deleteInstructionInfo = document.getElementById('deleteInstructionInfo');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        
+
         // State
         let allInstructions = [];
         let filteredInstructions = [];
         let currentView = 'card'; // 'card' or 'list'
         let instructionToDelete = null;
-        
+
         // Initialize Supabase client
         const SUPABASE_URL = 'https://wygkdtlbjvdkhvvhkvxc.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5Z2tkdGxianZka2h2dmhrdnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwMjk1OTksImV4cCI6MjA5OTYwNTU5OX0.ynghEKXttrQUOwMyrxHguYU6nzYeylXdeElwVU1o0cE';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
+
         // Format currency
         function formatCurrency(amount, currency) {
             return new Intl.NumberFormat('tr-TR', {
@@ -229,17 +238,17 @@
                 currency: currency || 'TRY'
             }).format(amount);
         }
-        
+
         // Format date
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('tr-TR');
         }
-        
+
         // Toggle view between card and list
         function toggleView(view) {
             currentView = view;
-            
+
             // Update button states
             if (view === 'card') {
                 cardViewBtn.classList.add('active');
@@ -250,11 +259,11 @@
                 listViewBtn.classList.add('active');
                 instructionsContainer.classList.add('list-view');
             }
-            
+
             // Re-render instructions with the selected view
             renderInstructions(filteredInstructions);
         }
-        
+
         // Render instructions list
         function renderInstructions(instructions) {
             if (!instructions || instructions.length === 0) {
@@ -267,14 +276,14 @@
                 `;
                 return;
             }
-            
+
             if (currentView === 'card') {
                 renderCardView(instructions);
             } else {
                 renderListView(instructions);
             }
         }
-        
+
         // Render card view
         function renderCardView(instructions) {
             let html = '<div class="row">';
@@ -282,7 +291,7 @@
                 const instructionType = instruction.talimat_turu || 'Belirtilmemiş';
                 const instructionDate = instruction.talimat_tarihi ? formatDate(instruction.talimat_tarihi) : 'Belirtilmemiş';
                 const amount = instruction.tutar ? formatCurrency(instruction.tutar, instruction.para_birimi) : 'Belirtilmemiş';
-                
+
                 html += `
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card instruction-card h-100">
@@ -311,19 +320,19 @@
                 `;
             });
             html += '</div>';
-            
+
             instructionsContainer.innerHTML = html;
-            
+
             // Add event listeners to detail and delete buttons
             document.querySelectorAll('.detail-btn').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function () {
                     const instructionId = this.getAttribute('data-id');
                     showInstructionDetail(instructionId);
                 });
             });
-            
+
             document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function () {
                     const instructionId = this.getAttribute('data-id');
                     const instructionNumber = this.getAttribute('data-number');
                     const instructionType = this.getAttribute('data-type');
@@ -331,7 +340,7 @@
                 });
             });
         }
-        
+
         // Render list view
         function renderListView(instructions) {
             let html = `
@@ -348,12 +357,12 @@
                         </thead>
                         <tbody>
             `;
-            
+
             instructions.forEach(instruction => {
                 const instructionType = instruction.talimat_turu || 'Belirtilmemiş';
                 const instructionDate = instruction.talimat_tarihi ? formatDate(instruction.talimat_tarihi) : 'Belirtilmemiş';
                 const amount = instruction.tutar ? formatCurrency(instruction.tutar, instruction.para_birimi) : 'Belirtilmemiş';
-                
+
                 html += `
                     <tr class="instruction-row">
                         <td>${instruction.instruction_number || 'N/A'}</td>
@@ -373,25 +382,25 @@
                     </tr>
                 `;
             });
-            
+
             html += `
                         </tbody>
                     </table>
                 </div>
             `;
-            
+
             instructionsContainer.innerHTML = html;
-            
+
             // Add event listeners to detail and delete buttons
             document.querySelectorAll('.detail-btn').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function () {
                     const instructionId = this.getAttribute('data-id');
                     showInstructionDetail(instructionId);
                 });
             });
-            
+
             document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function () {
                     const instructionId = this.getAttribute('data-id');
                     const instructionNumber = this.getAttribute('data-number');
                     const instructionType = this.getAttribute('data-type');
@@ -399,12 +408,12 @@
                 });
             });
         }
-        
+
         // Show instruction detail in modal
         function showInstructionDetail(instructionId) {
             const instruction = allInstructions.find(inst => inst.id == instructionId);
             if (!instruction) return;
-            
+
             let detailHtml = `
                 <div class="row">
                     <div class="col-12">
@@ -438,7 +447,7 @@
                         </table>
                     </div>
             `;
-            
+
             // Add sender information
             if (instruction.gonderici_firma) {
                 detailHtml += `
@@ -451,7 +460,7 @@
                                     <td>${instruction.gonderici_firma.name || 'Belirtilmemiş'}</td>
                                 </tr>
                 `;
-                
+
                 if (instruction.gonderici_banka) {
                     detailHtml += `
                                 <tr>
@@ -468,14 +477,14 @@
                                 </tr>
                     `;
                 }
-                
+
                 detailHtml += `
                             </tbody>
                         </table>
                     </div>
                 `;
             }
-            
+
             // Add receiver information
             if (instruction.alici_firma) {
                 detailHtml += `
@@ -488,7 +497,7 @@
                                     <td>${instruction.alici_firma.name || 'Belirtilmemiş'}</td>
                                 </tr>
                 `;
-                
+
                 if (instruction.alici_banka) {
                     detailHtml += `
                                 <tr>
@@ -505,14 +514,14 @@
                                 </tr>
                     `;
                 }
-                
+
                 detailHtml += `
                             </tbody>
                         </table>
                     </div>
                 `;
             }
-            
+
             // Add description
             if (instruction.aciklama) {
                 detailHtml += `
@@ -522,14 +531,14 @@
                     </div>
                 `;
             }
-            
+
             detailHtml += `</div>`;
-            
+
             modalBody.innerHTML = detailHtml;
             const detailModal = new bootstrap.Modal(detailModalElement);
             detailModal.show();
         }
-        
+
         // Show delete confirmation modal
         function showDeleteConfirmation(instructionId, instructionNumber, instructionType) {
             instructionToDelete = instructionId;
@@ -537,62 +546,62 @@
             const deleteModal = new bootstrap.Modal(deleteModalElement);
             deleteModal.show();
         }
-        
+
         // Delete instruction
         async function deleteInstruction() {
             if (!instructionToDelete) return;
-            
+
             try {
                 // Show loading state
                 confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Siliniyor...';
                 confirmDeleteBtn.disabled = true;
-                
+
                 // Delete instruction from Supabase
                 const { error } = await supabaseClient
                     .from('payment_instructions')
                     .delete()
                     .eq('id', instructionToDelete);
-                
+
                 if (error) {
                     throw new Error(error.message);
                 }
-                
+
                 // Hide delete modal
                 const deleteModal = bootstrap.Modal.getInstance(deleteModalElement);
                 deleteModal.hide();
-                
+
                 // Reset delete state
                 instructionToDelete = null;
                 confirmDeleteBtn.textContent = 'Sil';
                 confirmDeleteBtn.disabled = false;
-                
+
                 // Reload instructions
                 await loadInstructions();
-                
+
                 // Show success message
                 alert('Talimat başarıyla silindi.');
             } catch (error) {
                 console.error('Talimat silinirken hata oluştu:', error);
                 alert('Talimat silinirken bir hata oluştu: ' + error.message);
-                
+
                 // Reset delete state
                 confirmDeleteBtn.textContent = 'Sil';
                 confirmDeleteBtn.disabled = false;
             }
         }
-        
+
         // Apply filters and sorting
         function applyFilters() {
             const typeFilter = instructionTypeFilter.value;
             const dateFrom = dateFromFilter.value;
             const dateTo = dateToFilter.value;
-            
+
             filteredInstructions = allInstructions.filter(instruction => {
                 // Type filter
                 if (typeFilter !== 'all' && instruction.talimat_turu !== typeFilter) {
                     return false;
                 }
-                
+
                 // Date range filter
                 if (dateFrom && instruction.talimat_tarihi) {
                     const instructionDate = new Date(instruction.talimat_tarihi);
@@ -601,7 +610,7 @@
                         return false;
                     }
                 }
-                
+
                 if (dateTo && instruction.talimat_tarihi) {
                     const instructionDate = new Date(instruction.talimat_tarihi);
                     const toDate = new Date(dateTo);
@@ -609,28 +618,28 @@
                         return false;
                     }
                 }
-                
+
                 return true;
             });
-            
+
             // Apply sorting
             const sortValue = sortOrder.value;
             const [sortField, sortDirection] = sortValue.split('.');
-            
+
             filteredInstructions.sort((a, b) => {
                 let aValue = a[sortField];
                 let bValue = b[sortField];
-                
+
                 // Handle date comparison
                 if (sortField === 'talimat_tarihi') {
                     aValue = aValue ? new Date(aValue) : new Date(0);
                     bValue = bValue ? new Date(bValue) : new Date(0);
                 }
-                
+
                 // Handle null/undefined values
                 if (aValue === null || aValue === undefined) return 1;
                 if (bValue === null || bValue === undefined) return -1;
-                
+
                 // Compare values
                 if (aValue < bValue) {
                     return sortDirection === 'asc' ? -1 : 1;
@@ -640,10 +649,10 @@
                 }
                 return 0;
             });
-            
+
             renderInstructions(filteredInstructions);
         }
-        
+
         // Clear filters
         function clearFilters() {
             instructionTypeFilter.value = 'all';
@@ -653,7 +662,7 @@
             filteredInstructions = [...allInstructions];
             renderInstructions(filteredInstructions);
         }
-        
+
         // Load instructions from Supabase
         async function loadInstructions() {
             try {
@@ -686,7 +695,7 @@
                 `;
             }
         }
-        
+
         // Event Listeners
         applyFiltersBtn.addEventListener('click', applyFilters);
         clearFiltersBtn.addEventListener('click', clearFilters);
@@ -694,11 +703,12 @@
         listViewBtn.addEventListener('click', () => toggleView('list'));
         sortOrder.addEventListener('change', applyFilters);
         confirmDeleteBtn.addEventListener('click', deleteInstruction);
-        
+
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadInstructions();
         });
     </script>
 </body>
+
 </html>
