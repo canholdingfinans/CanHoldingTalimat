@@ -323,6 +323,52 @@ export const talimatOperations = {
         return await this.createHavaleEFT(instructionData);
     },
 
+    // Create doviz instruction
+    async createDoviz(instructionData) {
+        if (!supabaseClient || !supabaseClient.from) {
+            console.warn('Supabase client not initialized, returning mock data');
+            return { id: Date.now(), ...instructionData };
+        }
+        
+        const { data, error } = await supabaseClient
+            .from('payment_instructions')
+            .insert([instructionData])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Döviz talimatı kaydedilirken hata oluştu:', error.message);
+            throw new Error(`Döviz talimatı kaydedilemedi: ${error.message}`);
+        }
+
+        return data;
+    },
+
+    // Check for duplicate doviz instruction
+    async checkDuplicateDoviz(gondericiBankaHesapId, dovizIslemiTuru, tutar, talimatTarihi) {
+        if (!supabaseClient || !supabaseClient.from) {
+            console.warn('Supabase client not initialized, skipping duplicate check');
+            return false;
+        }
+        
+        const { data, error } = await supabaseClient
+            .from('payment_instructions')
+            .select('id')
+            .eq('talimat_turu', 'Döviz Alım/Satım')
+            .eq('gonderici_banka_hesap_id', gondericiBankaHesapId)
+            .eq('doviz_islemi_turu', dovizIslemiTuru) // Zaten toLowerCase ile gelecek
+            .eq('tutar', tutar)
+            .eq('talimat_tarihi', talimatTarihi)
+            .limit(1);
+
+        if (error) {
+            console.error('Döviz duplike kontrol hatası:', error.message);
+            throw new Error(`Döviz duplike kontrolü yapılamadı: ${error.message}`);
+        }
+
+        return data && data.length > 0;
+    },
+
     // Check for duplicate havale/EFT instruction
     async checkDuplicateHavale(gondericiFirmaId, aliciFirmaId, tutar, aciklama) {
         // Check if supabaseClient is properly initialized

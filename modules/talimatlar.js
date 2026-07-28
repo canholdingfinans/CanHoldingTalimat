@@ -124,6 +124,22 @@ export const instructionTypes = {
         formFields: ['gonderici', 'alici', 'tutar', 'aciklama'],
         dbType: 'Cari Hesap Ödemesi',
         subType: 'Müşteri Ödemesi'
+    },
+    
+    // Foreign Exchange (FX) Types (NEW)
+    'doviz-alim': {
+        title: 'Döviz Alım',
+        category: 'doviz',
+        formFields: ['gonderici', 'alici', 'dovizIslemiTuru', 'dovizCinsi', 'dovizMiktari', 'kur', 'tutar', 'valorTarihi', 'aciklama'],
+        dbType: 'Döviz Alım/Satım',
+        subType: 'Döviz Alım'
+    },
+    'doviz-satim': {
+        title: 'Döviz Satım',
+        category: 'doviz',
+        formFields: ['gonderici', 'alici', 'dovizIslemiTuru', 'dovizCinsi', 'dovizMiktari', 'kur', 'tutar', 'valorTarihi', 'aciklama'],
+        dbType: 'Döviz Alım/Satım',
+        subType: 'Döviz Satım'
     }
 };
 
@@ -466,6 +482,11 @@ export const getCategoryInfo = (category) => {
             name: 'Cari Hesap Ödemesi',
             icon: 'fas fa-exchange-alt',
             color: 'secondary'
+        },
+        'doviz': {
+            name: 'Döviz İşlemleri',
+            icon: 'fas fa-coins',
+            color: 'warning'
         }
     };
     
@@ -557,4 +578,75 @@ export const printInstruction = (content, title = 'Talimat Yazdır') => {
         printWindow.print();
         printWindow.close();
     };
+};
+
+/**
+ * Create FX payment instruction
+ * @param {Object} formData - Form data object
+ * @returns {Promise<Object>} Created instruction object
+ */
+export const createDovizInstruction = async (formData) => {
+    try {
+        // 1. Validasyon
+        const { validateDovizForm } = await import('./validasyon.js');
+        const validation = validateDovizForm(formData);
+        if (!validation.isValid) {
+            throw new Error(validation.errors.join('\n'));
+        }
+
+        // 2. Firma ve Banka bilgilerini bul
+        const { findFirmaById } = await import('./firmalar.js');
+        const gondericiFirma = findFirmaById(formData.gondericiFirma);
+        const gondericiBanka = gondericiFirma?.bankalar?.find(b => b.id == formData.gondericiBanka);
+        
+        const aliciFirma = findFirmaById(formData.aliciFirma);
+        const aliciBanka = aliciFirma?.bankalar?.find(b => b.id == formData.aliciBanka);
+
+        if (!gondericiFirma || !gondericiBanka || !aliciFirma || !aliciBanka) {
+            throw new Error('Seçilen firma veya hesap bilgileri bulunamadı.');
+        }
+
+        // 3. Mükerrer Kontrolü
+        const isDuplicate = await talimatOperations.checkDuplicateDoviz(
+            gondericiBanka.id, 
+            formData.dovizIslemiTuru.toLowerCase(), 
+            parseFloat(formData.tutar),
+            formData.talimatTarihi
+        );
+        
+        if (isDuplicate) {
+            throw new Error('Bu hesap, tarih ve tutar için aynı yönde (alım/satım) zaten bir talimat mevcut. Lütfen kontrol ediniz.');
+        }
+
+        // 4. DB Data Hazırlığı
+        const instructionData = {
+            gonderici_firma_id: gondericiFirma.id,
+            gonderici_banka_hesap_id: gondericiBanka.id,
+            alici_firma_id: aliciFirma.id,
+            alici_banka_hesap_id: aliciBanka.id,
+            tutar: parseFloat(formData.tutar), // TL karşılığı
+            para_birimi: 'TRY', 
+            aciklama: formData.aciklama || '',
+            talimat_tarihi: formData.talimatTarihi,
+            talimat_turu: 'Döviz Alım/Satım',
+            doviz_islemi_turu: formData.dovizIslemiTuru.toLowerCase(), 
+            doviz_cinsi: formData.dovizCinsi,
+            doviz_miktari: parseFloat(formData.dovizMiktari),
+            kur: parseFloat(formData.kur),
+            valor_tarihi: formData.valorTarihi || formData.talimatTarihi 
+        };
+
+        // 5. Kayıt
+        const savedInstruction = await talimatOperations.createDoviz(instructionData);
+
+        return {
+            instruction: savedInstruction,
+            gondericiFirma,
+            gondericiBanka,
+            aliciFirma,
+            aliciBanka
+        };
+    } catch (error) {
+        throw error;
+    }
 };

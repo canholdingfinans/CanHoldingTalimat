@@ -276,7 +276,12 @@ const handleDynamicFormChange = (e) => {
         case 'gondericiFirma':
             const gondericiBankaSelect = document.getElementById('gondericiBanka');
             if (gondericiBankaSelect) {
-                populateBankaSelect(value, gondericiBankaSelect);
+                let currencyFilter = null;
+                const isDoviz = document.getElementById('dovizIslemiTuru');
+                if (isDoviz) {
+                    currencyFilter = (isDoviz.value === 'alım') ? 'TRY' : '!TRY';
+                }
+                populateBankaSelect(value, gondericiBankaSelect, currencyFilter);
                 updateParaBirimiKontrol();
             }
             break;
@@ -284,7 +289,12 @@ const handleDynamicFormChange = (e) => {
         case 'aliciFirma':
             const aliciBankaSelect = document.getElementById('aliciBanka');
             if (aliciBankaSelect) {
-                populateBankaSelect(value, aliciBankaSelect);
+                let currencyFilter = null;
+                const isDoviz = document.getElementById('dovizIslemiTuru');
+                if (isDoviz) {
+                    currencyFilter = (isDoviz.value === 'alım') ? '!TRY' : 'TRY';
+                }
+                populateBankaSelect(value, aliciBankaSelect, currencyFilter);
                 updateParaBirimiKontrol();
             }
             break;
@@ -697,6 +707,9 @@ const generateDynamicFormFields = (config) => {
         case 'cari':
             fieldsHTML = generateHavaleFields(config.subType);
             break;
+        case 'doviz':
+            fieldsHTML = generateDovizFields(config);
+            break;
         case 'vergi':
         case 'sgk':
         case 'gumruk':
@@ -740,6 +753,13 @@ const generateDynamicFormFields = (config) => {
         }
         
         populateFormDropdowns();
+        
+        if (config.category === 'doviz') {
+            setTimeout(() => {
+                initDovizCalculation();
+                setupDovizGondericiAliciSync();
+            }, 100);
+        }
     } else {
         // Show a placeholder for unsupported types
         container.innerHTML = `
@@ -749,6 +769,212 @@ const generateDynamicFormFields = (config) => {
             </div>
         `;
     }
+};
+
+const DOVIZ_CINSLERI = ['USD', 'EUR', 'GBP', 'CHF', 'JPY', 'CAD', 'AUD', 'DKK', 'SEK', 'NOK', 'RUB'];
+
+/**
+ * Initialize Döviz Calculation with "Sticky Override" Logic
+ */
+const initDovizCalculation = () => {
+    const dovizInput = document.getElementById('dovizMiktari');
+    const kurInput = document.getElementById('kur');
+    const tlTutarInput = document.getElementById('tutar');
+    
+    if (!dovizInput || !kurInput || !tlTutarInput) return;
+    
+    let isUserOverridden = false;
+    
+    tlTutarInput.addEventListener('input', () => {
+        if (tlTutarInput.value !== '') {
+            isUserOverridden = true;
+        } else {
+            isUserOverridden = false;
+            calculateTL();
+        }
+    });
+    
+    const calculateTL = () => {
+        if (isUserOverridden) return;
+        
+        const miktar = parseFloat(dovizInput.value);
+        const kur = parseFloat(kurInput.value);
+        
+        if (!isNaN(miktar) && !isNaN(kur)) {
+            tlTutarInput.value = (miktar * kur).toFixed(2);
+        }
+    };
+    
+    dovizInput.addEventListener('input', () => {
+        isUserOverridden = false;
+        calculateTL();
+    });
+    
+    kurInput.addEventListener('input', () => {
+        isUserOverridden = false;
+        calculateTL();
+    });
+};
+
+/**
+ * Setup logic to synchronize Sender Firm with Receiver Firm for FX transactions
+ */
+const setupDovizGondericiAliciSync = () => {
+    const gondericiFirmaSelect = document.getElementById('gondericiFirma');
+    const aliciFirmaSelect = document.getElementById('aliciFirma');
+    const isDovizForm = document.getElementById('dovizIslemiTuru');
+    
+    if (!gondericiFirmaSelect || !aliciFirmaSelect || !isDovizForm) return;
+    
+    gondericiFirmaSelect.addEventListener('change', (e) => {
+        const senderValue = e.target.value;
+        
+        if (choicesInstances && choicesInstances['aliciFirma']) {
+            if (senderValue) {
+                choicesInstances['aliciFirma'].setChoiceByValue(senderValue);
+            } else {
+                choicesInstances['aliciFirma'].clearStore();
+            }
+            // Trigger native event so handleDynamicFormChange catches it and updates the aliciBanka dropdown
+            aliciFirmaSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        } else {
+            aliciFirmaSelect.value = senderValue;
+            aliciFirmaSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+};
+
+/**
+ * Generate Döviz Alım/Satım specific fields
+ */
+const generateDovizFields = (config) => {
+    const isAlim = config.subType === 'Döviz Alım';
+    const islemYonu = isAlim ? 'alım' : 'satım';
+    
+    const dovizOptions = DOVIZ_CINSLERI.map(c => `<option value="${c}">${c}</option>`).join('');
+    
+    const gondericiHesapLabel = isAlim ? 'Gönderici Hesap (TRY)' : 'Gönderici Hesap (Döviz)';
+    const aliciHesapLabel = isAlim ? 'Alıcı Hesap (Döviz)' : 'Alıcı Hesap (TRY)';
+    
+    return `
+        <div class="row">
+            <input type="hidden" id="dovizIslemiTuru" value="${islemYonu}">
+            
+            <div class="col-md-6">
+                <div class="card border-warning mb-3">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <h6 class="mb-0 text-warning">
+                            <i class="fas fa-arrow-up"></i> Gönderici Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="gondericiFirma" class="form-label">Gönderici Firma <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gondericiFirma" data-filter-type="grup" required>
+                                <option value="">Firma Seçiniz</option>
+                            </select>
+                            <div class="form-text">Sadece Grup firmaları işlem yapabilir</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gondericiBanka" class="form-label">${gondericiHesapLabel} <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gondericiBanka" required>
+                                <option value="">Önce Firma Seçiniz</option>
+                            </select>
+                        </div>
+                        <div id="gondericiBankaDetay"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card border-info mb-3">
+                    <div class="card-header bg-info bg-opacity-10">
+                        <h6 class="mb-0 text-info">
+                            <i class="fas fa-arrow-down"></i> Alıcı Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="aliciFirma" class="form-label">Alıcı Firma <span class="text-danger">*</span></label>
+                            <select class="form-select" id="aliciFirma" data-filter-type="grup" required disabled>
+                                <option value="">Gönderici ile aynı olacak</option>
+                            </select>
+                            <div class="form-text">Alıcı firma otomatik olarak Gönderici firma ile eşlenir</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="aliciBanka" class="form-label">${aliciHesapLabel} <span class="text-danger">*</span></label>
+                            <select class="form-select" id="aliciBanka" required>
+                                <option value="">Önce Gönderici Seçiniz</option>
+                            </select>
+                        </div>
+                        <div id="aliciBankaDetay"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-success">
+                    <div class="card-header bg-success bg-opacity-10">
+                        <h6 class="mb-0 text-success">
+                            <i class="fas fa-coins"></i> İşlem ve Döviz Detayları
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="dovizCinsi" class="form-label">Döviz Cinsi <span class="text-danger">*</span></label>
+                                <select class="form-select" id="dovizCinsi" required>
+                                    <option value="">Seçiniz</option>
+                                    ${dovizOptions}
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="dovizMiktari" class="form-label">Döviz Miktarı <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="dovizMiktari" step="0.01" min="0.01" placeholder="0.00" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="kur" class="form-label">İşlem Kuru <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="kur" step="0.000001" min="0.000001" placeholder="0.000000" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="tutar" class="form-label">TL Karşılığı <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="tutar" step="0.01" min="0.01" placeholder="0.00" required>
+                                    <span class="input-group-text">TRY</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="talimatTarihi" class="form-label">Talimat Tarihi <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="talimatTarihi" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="valorTarihi" class="form-label">Valör Tarihi</label>
+                                <input type="date" class="form-control" id="valorTarihi">
+                                <div class="form-text">Boş bırakılırsa Talimat Tarihi kullanılır</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="aciklama" class="form-label">Açıklama</label>
+                                <input type="text" class="form-control" id="aciklama" placeholder="İsteğe bağlı işlem açıklaması">
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                            <button type="button" class="btn btn-success" id="talimatOlusturBtn">
+                                <i class="fas fa-check"></i> Talimat Oluştur
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="talimatYazdirBtn">
+                                <i class="fas fa-print"></i> Yazdır
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 };
 
 /**
@@ -1264,13 +1490,20 @@ const populateFormDropdowns = () => {
 /**
  * Populate bank select for a specific firm
  */
-const populateBankaSelect = (firmaId, bankaSelect) => {
+const populateBankaSelect = (firmaId, bankaSelect, currencyFilter = null) => {
     if (!bankaSelect) return;
     
     bankaSelect.innerHTML = '<option value="">Hesap Seçiniz</option>';
     
     if (firmaId) {
-        const banks = getBanksForFirma(firmaId);
+        let banks = getBanksForFirma(firmaId);
+        
+        if (currencyFilter === 'TRY') {
+            banks = banks.filter(b => b.para_birimi === 'TRY' || b.para_birimi === 'TL');
+        } else if (currencyFilter === '!TRY') {
+            banks = banks.filter(b => b.para_birimi !== 'TRY' && b.para_birimi !== 'TL');
+        }
+        
         banks.forEach(banka => {
             const displayName = getBankDisplayName(banka);
             const option = new Option(displayName, banka.id);

@@ -93,6 +93,12 @@
                 <div class="filter-section">
                     <div class="row align-items-end">
                         <div class="col-md-2 mb-3">
+                            <label for="grupFirmaFilter" class="form-label">Gönderici Firma</label>
+                            <select class="form-select" id="grupFirmaFilter">
+                                <option value="all">Tüm Firmalar</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
                             <label for="instructionTypeFilter" class="form-label">Talimat Türü</label>
                             <select class="form-select" id="instructionTypeFilter">
                                 <option value="all">Tüm Türler</option>
@@ -100,6 +106,7 @@
                                 <option value="Vergi Ödemesi">Vergi Ödemesi</option>
                                 <option value="SGK Ödemesi">SGK Ödemesi</option>
                                 <option value="Gümrük Ödemesi">Gümrük Ödemesi</option>
+                                <option value="Döviz Alım/Satım">Döviz İşlemleri</option>
                             </select>
                         </div>
                         <div class="col-md-2 mb-3">
@@ -113,18 +120,18 @@
                         <div class="col-md-2 mb-3">
                             <label for="sortOrder" class="form-label">Sırala</label>
                             <select class="form-select" id="sortOrder">
-                                <option value="instruction_number.desc">Talimat Numarası (En Yeni)</option>
-                                <option value="instruction_number.asc">Talimat Numarası (En Eski)</option>
-                                <option value="talimat_tarihi.desc">Talimat Tarihi (En Yeni)</option>
-                                <option value="talimat_tarihi.asc">Talimat Tarihi (En Eski)</option>
+                                <option value="instruction_number.desc">Talimat No (En Yeni)</option>
+                                <option value="instruction_number.asc">Talimat No (En Eski)</option>
+                                <option value="talimat_tarihi.desc">Tarih (En Yeni)</option>
+                                <option value="talimat_tarihi.asc">Tarih (En Eski)</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-2 mb-3">
                             <div class="d-flex gap-2 h-100 align-items-end">
-                                <button id="clearFilters" class="btn btn-outline-secondary">
+                                <button id="clearFilters" class="btn btn-outline-secondary w-50">
                                     <i class="fas fa-times"></i> Temizle
                                 </button>
-                                <button id="applyFilters" class="btn btn-primary">
+                                <button id="applyFilters" class="btn btn-primary w-50">
                                     <i class="fas fa-search"></i> Uygula
                                 </button>
                             </div>
@@ -206,6 +213,7 @@
     <script type="module">
         // DOM Elements
         const instructionsContainer = document.getElementById('instructionsContainer');
+        const grupFirmaFilter = document.getElementById('grupFirmaFilter');
         const instructionTypeFilter = document.getElementById('instructionTypeFilter');
         const dateFromFilter = document.getElementById('dateFromFilter');
         const dateToFilter = document.getElementById('dateToFilter');
@@ -300,10 +308,21 @@
                                     <h6 class="card-title mb-0">${instructionType}</h6>
                                     <span class="badge bg-primary status-badge">${instruction.instruction_number || 'N/A'}</span>
                                 </div>
-                                <p class="card-text">
-                                    <small class="text-muted">
-                                        <i class="fas fa-calendar me-1"></i> ${instructionDate}<br>
-                                        <i class="fas fa-money-bill-wave me-1"></i> ${amount}
+                                <div class="card-text mb-3 small">
+                                    <div class="d-flex align-items-start mb-1">
+                                        <i class="fas fa-arrow-alt-circle-right text-muted mt-1 me-2 w-15px text-center"></i>
+                                        <div><strong>Gönderici:</strong><br>${instruction.gonderici_firma?.name || 'Belirtilmemiş'}</div>
+                                    </div>
+                                    <div class="d-flex align-items-start mb-1">
+                                        <i class="fas fa-arrow-alt-circle-left text-muted mt-1 me-2 w-15px text-center"></i>
+                                        <div><strong>Alıcı:</strong><br>${instruction.alici_firma?.name || 'Belirtilmemiş'}</div>
+                                    </div>
+                                    ${instruction.aciklama ? `<div class="text-muted mt-2 fst-italic">"${instruction.aciklama}"</div>` : ''}
+                                </div>
+                                <p class="card-text border-top pt-2">
+                                    <small class="text-muted d-flex justify-content-between">
+                                        <span><i class="fas fa-calendar me-1"></i> ${instructionDate}</span>
+                                        <span class="fw-bold"><i class="fas fa-money-bill-wave me-1"></i> ${amount}</span>
                                     </small>
                                 </p>
                                 <div class="d-flex gap-2">
@@ -350,6 +369,8 @@
                             <tr>
                                 <th>Talimat No</th>
                                 <th>Tür</th>
+                                <th>Gönderici</th>
+                                <th>Alıcı</th>
                                 <th>Tarih</th>
                                 <th>Tutar</th>
                                 <th>İşlemler</th>
@@ -367,8 +388,10 @@
                     <tr class="instruction-row">
                         <td>${instruction.instruction_number || 'N/A'}</td>
                         <td>${instructionType}</td>
+                        <td class="small">${instruction.gonderici_firma?.name || '-'}</td>
+                        <td class="small">${instruction.alici_firma?.name || '-'}</td>
                         <td>${instructionDate}</td>
-                        <td>${amount}</td>
+                        <td class="fw-bold">${amount}</td>
                         <td>
                             <div class="d-flex gap-2">
                                 <button class="btn btn-outline-primary btn-sm detail-btn" data-id="${instruction.id}">
@@ -593,6 +616,7 @@
         // Apply filters and sorting
         function applyFilters() {
             const typeFilter = instructionTypeFilter.value;
+            const firmaFilter = grupFirmaFilter.value;
             const dateFrom = dateFromFilter.value;
             const dateTo = dateToFilter.value;
 
@@ -600,6 +624,13 @@
                 // Type filter
                 if (typeFilter !== 'all' && instruction.talimat_turu !== typeFilter) {
                     return false;
+                }
+
+                // Firma filter
+                if (firmaFilter !== 'all') {
+                    if (!instruction.gonderici_firma || instruction.gonderici_firma.name !== firmaFilter) {
+                        return false;
+                    }
                 }
 
                 // Date range filter
@@ -655,12 +686,28 @@
 
         // Clear filters
         function clearFilters() {
+            grupFirmaFilter.value = 'all';
             instructionTypeFilter.value = 'all';
             dateFromFilter.value = '';
             dateToFilter.value = '';
             sortOrder.value = 'instruction_number.desc';
             filteredInstructions = [...allInstructions];
             renderInstructions(filteredInstructions);
+        }
+
+        // Populate Firma Filter
+        function populateFirmaFilter(instructions) {
+            const firmalar = [...new Set(instructions
+                .filter(i => i.gonderici_firma && i.gonderici_firma.name)
+                .map(i => i.gonderici_firma.name))]
+                .sort();
+            
+            let optionsHtml = '<option value="all">Tüm Firmalar</option>';
+            firmalar.forEach(firma => {
+                optionsHtml += `<option value="${firma}">${firma}</option>`;
+            });
+            
+            grupFirmaFilter.innerHTML = optionsHtml;
         }
 
         // Load instructions from Supabase
@@ -683,6 +730,7 @@
 
                 allInstructions = data;
                 filteredInstructions = [...allInstructions];
+                populateFirmaFilter(allInstructions);
                 renderInstructions(filteredInstructions);
             } catch (error) {
                 console.error('Talimatlar yüklenirken hata oluştu:', error);

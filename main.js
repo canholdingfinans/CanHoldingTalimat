@@ -5,8 +5,8 @@
 
 import { fetchFirmalar, addFirma, updateFirma, deleteFirma, findFirmaById, addFirmaBulk } from './modules/firmalar.js';
 import { addBanka, updateBanka, deleteBanka, addBankaBulk, formatIBAN } from './modules/bankalar.js';
-import { createHavaleEFTInstruction, createCariInstruction, createVergiInstruction as createVergiInstructionModule, formatInstructionNumber, formatCurrency, formatDate, printInstruction, instructionTypes } from './modules/talimatlar.js';
-import { validateIBAN, validateCompanyTypeRequirements, validateHavaleEFTForm, validateCurrencyMatch } from './modules/validasyon.js';
+import { createHavaleEFTInstruction, createCariInstruction, createVergiInstruction as createVergiInstructionModule, createDovizInstruction, formatInstructionNumber, formatCurrency, formatDate, printInstruction, instructionTypes } from './modules/talimatlar.js';
+import { validateIBAN, validateCompanyTypeRequirements, validateHavaleEFTForm, validateCurrencyMatch, validateDovizForm } from './modules/validasyon.js';
 import { initializeUI, renderFirmaAccordion, showNotification, showFirmaModal, showBankaModal, hideModals, refreshUI, getCurrentInstructionType } from './modules/ui-etkilesimleri.js';
 import { talimatOperations, supabaseClient } from './modules/supabase-entegrasyonu.js';
 
@@ -799,6 +799,8 @@ const handleTalimatOlustur = async (event) => {
             await createGumrukInstructionFromForm();
         } else if (type.startsWith('cari')) {
             await createCariInstructionFromForm();
+        } else if (type.startsWith('doviz')) {
+            await createDovizInstructionFromForm();
         } else {
             throw new Error('Desteklenmeyen talimat türü');
         }
@@ -807,6 +809,178 @@ const handleTalimatOlustur = async (event) => {
         console.error('Talimat creation error:', error);
         showNotification(error.message, 'error');
     }
+};
+
+/**
+ * Create FX instruction from form data
+ */
+const createDovizInstructionFromForm = async () => {
+    const talimatTarihi = document.getElementById('talimatTarihi')?.value;
+    const formData = {
+        gondericiFirma: document.getElementById('gondericiFirma')?.value,
+        gondericiBanka: document.getElementById('gondericiBanka')?.value,
+        aliciFirma: document.getElementById('aliciFirma')?.value,
+        aliciBanka: document.getElementById('aliciBanka')?.value,
+        dovizIslemiTuru: document.getElementById('dovizIslemiTuru')?.value,
+        dovizCinsi: document.getElementById('dovizCinsi')?.value,
+        dovizMiktari: document.getElementById('dovizMiktari')?.value,
+        kur: document.getElementById('kur')?.value,
+        tutar: document.getElementById('tutar')?.value,
+        talimatTarihi: talimatTarihi,
+        valorTarihi: document.getElementById('valorTarihi')?.value || talimatTarihi,
+        aciklama: document.getElementById('aciklama')?.value
+    };
+    
+    const gondericiFirmaObj = findFirmaById(formData.gondericiFirma);
+    const aliciFirmaObj = findFirmaById(formData.aliciFirma);
+    
+    const companyTypeValidation = validateCompanyTypeRequirements(
+        gondericiFirmaObj, 
+        aliciFirmaObj, 
+        'Döviz İşlemi'
+    );
+    
+    if (!companyTypeValidation.isValid) {
+        showNotification(companyTypeValidation.message, 'error');
+        return;
+    }
+    
+    const result = await createDovizInstruction(formData);
+    
+    showNotification('Döviz işlemi talimatı başarıyla oluşturuldu ve kaydedildi!');
+    
+    generateDovizTalimatCikti(
+        result.gondericiFirma,
+        result.gondericiBanka,
+        result.aliciFirma,
+        result.aliciBanka,
+        formData,
+        result.instruction.instruction_number
+    );
+};
+
+/**
+ * Döviz Alım/Satım talimatı için HTML çıktısı oluşturur
+ */
+const generateDovizTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirma, aliciBanka, formData, talimatNo) => {
+    const talimatCikti = document.getElementById('talimatCikti');
+    if (!talimatCikti) return;
+
+    const formattedDate = formatDate(formData.talimatTarihi);
+    const formattedValorDate = formData.valorTarihi ? formatDate(formData.valorTarihi) : formattedDate;
+    const displayTalimatNo = formatInstructionNumber(talimatNo);
+
+    const isAlim = formData.dovizIslemiTuru === 'alım';
+    const baslikText = isAlim ? 'DÖVİZ ALIM TALİMATI' : 'DÖVİZ SATIM TALİMATI';
+    const islemYonuText = isAlim ? 'Döviz Alım' : 'Döviz Satım';
+
+    const formattedDovizMiktari = formatCurrency(formData.dovizMiktari, formData.dovizCinsi);
+    const formattedTLTutar = formatCurrency(formData.tutar, 'TRY');
+    const formattedKur = parseFloat(formData.kur).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+
+    const hitapVerisi = buildHitapBlogu(gondericiBanka);
+    const gondericiSubeMetin = hitapVerisi.text;
+
+    talimatCikti.innerHTML = `
+        <div class="talimat-container">
+            <div class="talimat-header">
+                <div class="talimat-letterhead">
+                    <div class="firma-logo">${gondericiFirma.name}</div>
+                </div>
+                <div class="talimat-tarih-no">
+                    <div><strong>Tarih:</strong> ${formattedDate}</div>
+                    <div><strong>Talimat No:</strong> ${displayTalimatNo}</div>
+                </div>
+            </div>
+            
+            ${hitapVerisi.html}
+            
+            <h3 class="talimat-title text-center my-4">
+                <strong>${baslikText}</strong>
+            </h3>
+            
+            <div class="talimat-body">
+                <p class="talimat-metin">
+                    ${gondericiSubeMetin} nezdindeki 
+                    <strong>${formatIBAN(gondericiBanka.iban)}</strong> numaralı hesabımızdan, aşağıda belirtilen şartlarla 
+                    <strong>${islemYonuText}</strong> işleminin yapılmasını rica ederiz.
+                </p>
+            </div>
+            
+            <div class="alici-bilgileri-container mt-4">
+                <table class="table table-bordered talimat-table">
+                    <thead>
+                        <tr class="table-primary">
+                            <th colspan="2" class="text-center">
+                                <h6 class="mb-0"><i class="fas fa-coins"></i> İŞLEM VE DÖVİZ DETAYLARI</h6>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th class="table-light" style="width: 35%;">İşlem Yönü</th>
+                            <td><strong class="text-primary">${islemYonuText}</strong></td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Gönderici Firma / Hesap</th>
+                            <td>${gondericiFirma.name} (${formatIBAN(gondericiBanka.iban)})</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Alıcı Firma / Hesap</th>
+                            <td>${aliciFirma.name} (${formatIBAN(aliciBanka.iban)})</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Döviz Cinsi</th>
+                            <td><strong>${formData.dovizCinsi}</strong></td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Döviz Miktarı</th>
+                            <td><strong class="text-success">${formattedDovizMiktari}</strong></td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">İşlem Kuru</th>
+                            <td><code>${formattedKur}</code></td>
+                        </tr>
+                        <tr class="table-warning">
+                            <th class="table-light">TL Karşılığı</th>
+                            <td><strong class="text-danger">${formattedTLTutar}</strong></td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Valör Tarihi</th>
+                            <td>${formattedValorDate}</td>
+                        </tr>
+                        ${formData.aciklama ? `
+                        <tr>
+                            <th class="table-light">Açıklama</th>
+                            <td>${formData.aciklama}</td>
+                        </tr>
+                        ` : ''}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="talimat-footer mt-4">
+                <div class="saygilar-bolumu">
+                    <p><strong>Saygılarımızla,</strong></p>
+                    <div class="firma-imza mt-3">
+                        <div class="firma-adi">
+                            <strong>${gondericiFirma.name}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="kase-alani mt-4">
+                    <div class="kase-kutu">
+                        <div class="kase-metin">YETKİLİ İMZA (Kaşe)</div>
+                        <div class="kase-cerceve"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const yazdirBtn = document.getElementById('talimatYazdirBtn');
+    if (yazdirBtn) yazdirBtn.disabled = false;
 };
 
 /**

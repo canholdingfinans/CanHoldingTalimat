@@ -453,3 +453,122 @@ export const validateCompanyTypeRequirements = (gondericiFirma, aliciFirma, inst
         message: 'Firma türleri uygun.'
     };
 };
+
+/**
+ * Validate exchange rate input
+ * @param {string|number} kur - Exchange rate to validate
+ * @returns {Object} - {isValid: boolean, message: string}
+ */
+export const validateKur = (kur) => {
+    if (!kur) {
+        return {
+            isValid: false,
+            message: 'Kur alanı boş bırakılamaz.'
+        };
+    }
+    
+    const numKur = parseFloat(kur);
+    
+    if (isNaN(numKur)) {
+        return {
+            isValid: false,
+            message: 'Geçersiz kur formatı.'
+        };
+    }
+    
+    if (numKur <= 0) {
+        return {
+            isValid: false,
+            message: 'Kur sıfırdan büyük olmalıdır.'
+        };
+    }
+    
+    const decimalPart = kur.toString().split('.')[1];
+    if (decimalPart && decimalPart.length > 6) {
+        return { 
+            isValid: false, 
+            message: 'Kur en fazla 6 ondalık basamak içerebilir.' 
+        };
+    }
+    
+    if (numKur > 9999999.999999) {
+        return {
+            isValid: false,
+            message: 'Kur çok yüksek.'
+        };
+    }
+    
+    return {
+        isValid: true,
+        message: 'Kur geçerli.'
+    };
+};
+
+/**
+ * Comprehensive form validation for Döviz Alım/Satım
+ * @param {Object} formData - Form data object
+ * @returns {Object} - {isValid: boolean, errors: string[]}
+ */
+export const validateDovizForm = (formData) => {
+    const errors = [];
+    
+    // Required fields validation
+    const requiredValidation = validateRequiredFields({
+        'Gönderici Firma': formData.gondericiFirma,
+        'Gönderici Hesap': formData.gondericiBanka,
+        'Alıcı Firma': formData.aliciFirma,
+        'Alıcı Hesap': formData.aliciBanka,
+        'Döviz İşlemi Türü': formData.dovizIslemiTuru,
+        'Döviz Cinsi': formData.dovizCinsi,
+        'Döviz Miktarı': formData.dovizMiktari,
+        'Kur': formData.kur,
+        'Tutar (TL Karşılığı)': formData.tutar,
+        'Talimat Tarihi': formData.talimatTarihi
+    });
+    
+    if (!requiredValidation.isValid) {
+        errors.push(...requiredValidation.errors);
+    }
+    
+    // İşlem Türü Validation
+    if (formData.dovizIslemiTuru && !['alım', 'satım'].includes(formData.dovizIslemiTuru.toLowerCase())) {
+        errors.push('Geçersiz döviz işlemi türü. Sadece alım veya satım seçilebilir.');
+    }
+    
+    // Miktar validation
+    if (formData.dovizMiktari) {
+        const amountValidation = validateAmount(formData.dovizMiktari);
+        if (!amountValidation.isValid) {
+            errors.push('Döviz Miktarı: ' + amountValidation.message);
+        }
+    }
+    
+    // Tutar validation
+    if (formData.tutar) {
+        const tutarValidation = validateAmount(formData.tutar);
+        if (!tutarValidation.isValid) {
+            errors.push('TL Karşılığı: ' + tutarValidation.message);
+        }
+    }
+    
+    // Kur validation
+    if (formData.kur) {
+        const kurValidation = validateKur(formData.kur);
+        if (!kurValidation.isValid) {
+            errors.push(kurValidation.message);
+        }
+    }
+    
+    // Date validation
+    if (formData.talimatTarihi) {
+        const dateValidation = validateDate(formData.talimatTarihi);
+        if (!dateValidation.isValid) {
+            errors.push(dateValidation.message);
+        }
+    }
+    
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+};
