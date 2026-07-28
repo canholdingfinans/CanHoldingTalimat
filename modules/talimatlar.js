@@ -548,17 +548,53 @@ export const printInstruction = (content, title = 'Talimat Yazdır') => {
         throw new Error("Yazdırmak için önce bir talimat oluşturmalısınız.");
     }
     
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <html>
+    // 1. Görünmez iframe oluştur ve DOM'a ekle
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    
+    const iframeDoc = iframe.contentWindow.document;
+    let printed = false;
+    
+    // 2. Güvenilir Yazdırma Tetikleyicisi
+    const triggerPrint = () => {
+        if (printed) return; // Mükerrer çağrıları engelle
+        printed = true;
+        
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        
+        // Yazdırma işlemi bittikten/iptal edildikten sonra DOM'u temizle
+        setTimeout(() => {
+            if (document.body.contains(iframe)) {
+                document.body.removeChild(iframe);
+            }
+        }, 1000);
+    };
+    
+    // 3. Olay Dinleyicisi ve Güvenlik Ağı (Fallback)
+    iframe.onload = triggerPrint;
+    // Fallback: onload bir sebepten ateşlenmezse 500ms sonra zorla yazdır
+    setTimeout(triggerPrint, 500);
+    
+    // 4. İçeriği ve Stilleri Iframe'e yaz
+    iframeDoc.open();
+    iframeDoc.write(`
+        <!DOCTYPE html>
+        <html lang="tr">
         <head>
+            <meta charset="UTF-8">
             <title>${title}</title>
-            <link rel="stylesheet" href="style.css" type="text/css" media="print">
+            <link rel="stylesheet" href="style.css" type="text/css">
+            <link rel="stylesheet" href="style-improved-print.css" type="text/css">
             <style>
                 @media print { 
                     body { 
-                        -webkit-print-color-adjust: exact; 
-                        print-color-adjust: exact; 
+                        -webkit-print-color-adjust: exact !important; 
+                        print-color-adjust: exact !important; 
                     } 
                     .talimat-table th { 
                         background-color: #f2f2f2 !important; 
@@ -571,13 +607,7 @@ export const printInstruction = (content, title = 'Talimat Yazdır') => {
         </body>
         </html>
     `);
-    
-    printWindow.document.close();
-    printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-    };
+    iframeDoc.close();
 };
 
 /**
