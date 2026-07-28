@@ -636,11 +636,15 @@ export const createDovizInstruction = async (formData) => {
             throw new Error('Seçilen firma veya hesap bilgileri bulunamadı.');
         }
 
+        const isAlim = formData.dovizIslemiTuru.toLowerCase() === 'alım';
+        const dbTutar = isAlim ? parseFloat(formData.tutar) : parseFloat(formData.dovizMiktari);
+        const dbParaBirimi = gondericiBanka.para_birimi;
+
         // 3. Mükerrer Kontrolü
         const isDuplicate = await talimatOperations.checkDuplicateDoviz(
             gondericiBanka.id, 
             formData.dovizIslemiTuru.toLowerCase(), 
-            parseFloat(formData.tutar),
+            dbTutar,
             formData.talimatTarihi
         );
         
@@ -654,8 +658,8 @@ export const createDovizInstruction = async (formData) => {
             gonderici_banka_hesap_id: gondericiBanka.id,
             alici_firma_id: aliciFirma.id,
             alici_banka_hesap_id: aliciBanka.id,
-            tutar: parseFloat(formData.tutar), // TL karşılığı
-            para_birimi: 'TRY', 
+            tutar: dbTutar,
+            para_birimi: dbParaBirimi, 
             aciklama: formData.aciklama || '',
             talimat_tarihi: formData.talimatTarihi,
             talimat_turu: 'Döviz Alım/Satım',

@@ -305,6 +305,17 @@ const handleDynamicFormChange = (e) => {
                 const gondericiFirmaSelect = document.getElementById('gondericiFirma');
                 showBankaDetay(gondericiFirmaSelect?.value, value, gondericiBankaDetay);
                 updateParaBirimiKontrol();
+                
+                // Satım işleminde Gönderici banka döviz hesabıdır, Doviz Cinsi buranın para birimidir
+                const isDoviz = document.getElementById('dovizIslemiTuru');
+                if (isDoviz && isDoviz.value === 'satım') {
+                    const dovizCinsiInput = document.getElementById('dovizCinsi');
+                    if (dovizCinsiInput) {
+                        const banks = getBanksForFirma(gondericiFirmaSelect?.value);
+                        const banka = banks.find(b => b.id == value);
+                        dovizCinsiInput.value = banka ? banka.para_birimi : '';
+                    }
+                }
             }
             break;
             
@@ -314,6 +325,17 @@ const handleDynamicFormChange = (e) => {
                 const aliciFirmaSelect = document.getElementById('aliciFirma');
                 showBankaDetay(aliciFirmaSelect?.value, value, aliciBankaDetay);
                 updateParaBirimiKontrol();
+                
+                // Alım işleminde Alıcı banka döviz hesabıdır, Doviz Cinsi buranın para birimidir
+                const isDoviz = document.getElementById('dovizIslemiTuru');
+                if (isDoviz && isDoviz.value === 'alım') {
+                    const dovizCinsiInput = document.getElementById('dovizCinsi');
+                    if (dovizCinsiInput) {
+                        const banks = getBanksForFirma(aliciFirmaSelect?.value);
+                        const banka = banks.find(b => b.id == value);
+                        dovizCinsiInput.value = banka ? banka.para_birimi : '';
+                    }
+                }
             }
             break;
             
@@ -851,8 +873,6 @@ const generateDovizFields = (config) => {
     const isAlim = config.subType === 'Döviz Alım';
     const islemYonu = isAlim ? 'alım' : 'satım';
     
-    const dovizOptions = DOVIZ_CINSLERI.map(c => `<option value="${c}">${c}</option>`).join('');
-    
     const gondericiHesapLabel = isAlim ? 'Gönderici Hesap (TRY)' : 'Gönderici Hesap (Döviz)';
     const aliciHesapLabel = isAlim ? 'Alıcı Hesap (Döviz)' : 'Alıcı Hesap (TRY)';
     
@@ -925,10 +945,7 @@ const generateDovizFields = (config) => {
                         <div class="row">
                             <div class="col-md-3 mb-3">
                                 <label for="dovizCinsi" class="form-label">Döviz Cinsi <span class="text-danger">*</span></label>
-                                <select class="form-select" id="dovizCinsi" required>
-                                    <option value="">Seçiniz</option>
-                                    ${dovizOptions}
-                                </select>
+                                <input type="text" class="form-control fw-bold text-primary bg-light" id="dovizCinsi" readonly placeholder="Banka seçilince otomatik dolar" required>
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="dovizMiktari" class="form-label">Döviz Miktarı <span class="text-danger">*</span></label>

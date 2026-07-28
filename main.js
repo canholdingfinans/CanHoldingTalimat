@@ -242,6 +242,8 @@ const generateMultiPaymentHavaleEFTTalimatCikti = (gondericiFirma, gondericiBank
 // Expose the multi-payment function globally for testing
 window.generateMultiPaymentHavaleEFTTalimatCikti = generateMultiPaymentHavaleEFTTalimatCikti;
 
+let isAppInitializing = false;
+
 /**
  * Auth initialization and state management
  */
@@ -259,11 +261,16 @@ const initAuth = async () => {
             appContainer.style.display = 'block';
             
             // Initialize app data if not already loaded
-            if (document.querySelectorAll('.firma-accordion-item').length === 0) {
-                console.log('Initializing UI...');
-                initializeUI();
-                console.log('Loading initial data...');
-                await loadInitialData();
+            if (document.querySelectorAll('.firma-accordion-item').length === 0 && !isAppInitializing) {
+                isAppInitializing = true;
+                try {
+                    console.log('Initializing UI...');
+                    initializeUI();
+                    console.log('Loading initial data...');
+                    await loadInitialData();
+                } finally {
+                    isAppInitializing = false;
+                }
             }
         } else {
             // Logged out
@@ -278,10 +285,17 @@ const initAuth = async () => {
         loginContainer.style.display = 'none';
         appContainer.style.display = 'block';
         
-        console.log('Initializing UI...');
-        initializeUI();
-        console.log('Loading initial data...');
-        await loadInitialData();
+        if (document.querySelectorAll('.firma-accordion-item').length === 0 && !isAppInitializing) {
+            isAppInitializing = true;
+            try {
+                console.log('Initializing UI...');
+                initializeUI();
+                console.log('Loading initial data...');
+                await loadInitialData();
+            } finally {
+                isAppInitializing = false;
+            }
+        }
     } else {
         loginContainer.style.display = 'flex';
         appContainer.style.display = 'none';
@@ -782,11 +796,24 @@ const handleAccordionClick = async (event) => {
     }
 };
 
+let isSubmittingTalimat = false;
+
 /**
  * Handle talimat creation
  */
 const handleTalimatOlustur = async (event) => {
+    if (isSubmittingTalimat) return; // Prevent double submission
+    
+    const btn = document.getElementById('talimatOlusturBtn');
+    const originalText = btn ? btn.innerHTML : '';
+    
     try {
+        isSubmittingTalimat = true;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> İşleniyor...';
+        }
+        
         const { type } = event.detail;
         
         if (type.startsWith('havale')) {
@@ -808,6 +835,12 @@ const handleTalimatOlustur = async (event) => {
     } catch (error) {
         console.error('Talimat creation error:', error);
         showNotification(error.message, 'error');
+    } finally {
+        isSubmittingTalimat = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
     }
 };
 
