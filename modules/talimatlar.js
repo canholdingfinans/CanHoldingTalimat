@@ -223,7 +223,8 @@ export const createHavaleEFTInstruction = async (formData) => {
             para_birimi: gondericiBanka.para_birimi,
             aciklama: formData.aciklama || '',
             talimat_tarihi: formData.talimatTarihi,
-            talimat_turu: 'Havale/EFT'
+            talimat_turu: 'Havale/EFT',
+            department_prefix: formData.department_prefix || null
         };
         
         // Create instruction
@@ -303,7 +304,8 @@ export const createCariInstruction = async (formData) => {
             para_birimi: gondericiBanka.para_birimi,
             aciklama: formData.aciklama || '',
             talimat_tarihi: formData.talimatTarihi,
-            talimat_turu: 'Cari Hesap Ödemesi'
+            talimat_turu: 'Cari Hesap Ödemesi',
+            department_prefix: formData.department_prefix || null
         };
         
         // Create instruction
@@ -385,6 +387,7 @@ export const createVergiInstruction = async (formData) => {
             aciklama: formData.aciklama || '',
             talimat_tarihi: formData.talimatTarihi,
             talimat_turu: 'Vergi Ödemesi',
+            department_prefix: formData.department_prefix || null,
             vergi_turu: getCurrentInstructionType(), // Use current instruction type
             vergi_dairesi: gondericiFirma.vergi_dairesi || '',
             vergi_kimlik_no: gondericiFirma.vkn_tc_no || '',
@@ -663,6 +666,7 @@ export const createDovizInstruction = async (formData) => {
             aciklama: formData.aciklama || '',
             talimat_tarihi: formData.talimatTarihi,
             talimat_turu: 'Döviz Alım/Satım',
+            department_prefix: formData.department_prefix || null,
             doviz_islemi_turu: formData.dovizIslemiTuru.toLowerCase(), 
             doviz_cinsi: formData.dovizCinsi,
             doviz_miktari: parseFloat(formData.dovizMiktari),

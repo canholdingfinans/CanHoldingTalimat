@@ -268,7 +268,6 @@ const initAuth = async () => {
                     initializeUI();
                     console.log('Loading initial data...');
                     await loadInitialData();
-                    await loadUserDepartments();
                 } finally {
                     isAppInitializing = false;
                 }
@@ -293,7 +292,6 @@ const initAuth = async () => {
                 initializeUI();
                 console.log('Loading initial data...');
                 await loadInitialData();
-                await loadUserDepartments();
             } finally {
                 isAppInitializing = false;
             }
@@ -303,56 +301,6 @@ const initAuth = async () => {
         appContainer.style.display = 'none';
     }
 };
-
-/**
- * Load User Departments (Görev 2)
- */
-async function loadUserDepartments() {
-    const submitBtn = document.getElementById('talimatOlusturBtn'); // Generic olustur btn, but it's generated dynamically. Let's find a static button or container.
-    // Wait, the form is generated dynamically, so buttons are in #dynamicFormFields.
-    // We can disable pointer-events on the main content until loaded.
-    const mainContent = document.getElementById('mainContent');
-    if (mainContent) mainContent.style.pointerEvents = 'none';
-    if (mainContent) mainContent.style.opacity = '0.6';
-
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return;
-
-    const { data, error } = await supabaseClient
-        .from('app_user_departments')
-        .select('departments')
-        .eq('user_id', user.id)
-        .single();
-
-    if (error || !data) {
-        console.error('Yetki yüklenemedi:', error);
-        return;
-    }
-
-    const deps = data.departments;
-    const container = document.getElementById('departmentSelectionContainer');
-    const radioContainer = document.getElementById('departmentRadioButtons');
-
-    if (deps.length > 1) {
-        container.style.display = 'flex';
-        let html = '';
-        deps.forEach((dep, index) => {
-            html += `
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="department_prefix" id="dep_${dep}" value="${dep}" ${index === 0 ? 'checked' : ''}>
-                    <label class="form-check-label" for="dep_${dep}">${dep}</label>
-                </div>
-            `;
-        });
-        radioContainer.innerHTML = html;
-    } else {
-        container.style.display = 'none';
-        radioContainer.innerHTML = `<input type="hidden" name="department_prefix" value="${deps[0]}">`;
-    }
-
-    if (mainContent) mainContent.style.pointerEvents = 'auto';
-    if (mainContent) mainContent.style.opacity = '1';
-}
 
 /**
  * Application initialization
@@ -1080,8 +1028,6 @@ const createHavaleInstructionFromForm = async () => {
     console.log('Alıcı Banka ID:', document.getElementById('aliciBanka')?.value);
     console.log('=========================');
     
-    const departmentPrefixInput = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[name="department_prefix"]');
-
     const formData = {
         gondericiFirma: document.getElementById('gondericiFirma')?.value,
         gondericiBanka: document.getElementById('gondericiBanka')?.value,
@@ -1089,8 +1035,7 @@ const createHavaleInstructionFromForm = async () => {
         aliciBanka: document.getElementById('aliciBanka')?.value,
         tutar: document.getElementById('tutar')?.value,
         aciklama: document.getElementById('aciklama')?.value,
-        talimatTarihi: document.getElementById('talimatTarihi')?.value,
-        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+        talimatTarihi: document.getElementById('talimatTarihi')?.value
     };
     
     // Get company objects for validation
@@ -1135,8 +1080,6 @@ const createHavaleInstructionFromForm = async () => {
  * Create vergi instruction from form data
  */
 const createVergiInstructionFromForm = async () => {
-    const departmentPrefixInput = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[name="department_prefix"]');
-
     const formData = {
         gondericiFirma: document.getElementById('vergiGondericiFirma')?.value,
         gondericiBanka: document.getElementById('vergiGondericiBanka')?.value,
@@ -1144,8 +1087,7 @@ const createVergiInstructionFromForm = async () => {
         aciklama: document.getElementById('vergiAciklama')?.value,
         talimatTarihi: document.getElementById('vergiTalimatTarihi')?.value,
         tahakkukNo: document.getElementById('tahakkukNo')?.value,
-        vergiDonem: document.getElementById('vergiDonem')?.value,
-        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+        vergiDonem: document.getElementById('vergiDonem')?.value
     };
     
     // Get company objects for validation
@@ -1184,8 +1126,6 @@ const createVergiInstructionFromForm = async () => {
  * Create SGK instruction from form data
  */
 const createSGKInstructionFromForm = async () => {
-    const departmentPrefixInput = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[name="department_prefix"]');
-    
     const formData = {
         gondericiFirma: document.getElementById('sgkGondericiFirma')?.value,
         gondericiBanka: document.getElementById('sgkGondericiBanka')?.value,
@@ -1193,8 +1133,7 @@ const createSGKInstructionFromForm = async () => {
         aciklama: document.getElementById('sgkAciklama')?.value,
         talimatTarihi: document.getElementById('sgkTalimatTarihi')?.value,
         tahakkukNo: document.getElementById('sgkSicilNo')?.value,
-        sgkDonem: document.getElementById('sgkDonem')?.value,
-        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+        sgkDonem: document.getElementById('sgkDonem')?.value
     };
     
     // Get company objects for validation
@@ -1234,8 +1173,6 @@ const createSGKInstructionFromForm = async () => {
  * Create Gümrük instruction from form data
  */
 const createGumrukInstructionFromForm = async () => {
-    const departmentPrefixInput = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[name="department_prefix"]');
-
     const formData = {
         gondericiFirma: document.getElementById('gumrukGondericiFirma')?.value,
         gondericiBanka: document.getElementById('gumrukGondericiBanka')?.value,
@@ -1245,8 +1182,7 @@ const createGumrukInstructionFromForm = async () => {
         gumrukBeyannameNo: document.getElementById('gumrukBeyannameNo')?.value,
         gtipKodu: document.getElementById('gtipKodu')?.value,
         otvOrani: document.getElementById('otvOrani')?.value,
-        harcTuru: document.getElementById('harcTuru')?.value,
-        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+        harcTuru: document.getElementById('harcTuru')?.value
     };
     
     // Get company objects for validation
@@ -1512,8 +1448,6 @@ const createCariInstructionFromForm = async () => {
     const results = [];
     console.log('Creating instructions for', payments.length, 'payments');
     
-    const departmentPrefixInput = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[name="department_prefix"]');
-    
     for (const payment of payments) {
         const instructionData = {
             gonderici_firma_id: gondericiFirma.id,
@@ -1524,8 +1458,7 @@ const createCariInstructionFromForm = async () => {
             para_birimi: gondericiBanka.para_birimi,
             aciklama: payment.aciklama,
             talimat_tarihi: talimatTarihi,
-            talimat_turu: 'Cari Hesap Ödemesi',
-            department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+            talimat_turu: 'Cari Hesap Ödemesi'
         };
         
         console.log('Creating instruction with data:', instructionData);

@@ -118,6 +118,12 @@
                             <input type="date" class="form-control" id="dateToFilter">
                         </div>
                         <div class="col-md-2 mb-3">
+                            <label for="kullaniciFilter" class="form-label">Oluşturan Kişi</label>
+                            <select class="form-select" id="kullaniciFilter">
+                                <option value="all">Tüm Kullanıcılar</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
                             <label for="sortOrder" class="form-label">Sırala</label>
                             <select class="form-select" id="sortOrder">
                                 <option value="instruction_number.desc">Talimat No (En Yeni)</option>
@@ -217,6 +223,7 @@
         const instructionTypeFilter = document.getElementById('instructionTypeFilter');
         const dateFromFilter = document.getElementById('dateFromFilter');
         const dateToFilter = document.getElementById('dateToFilter');
+        const kullaniciFilter = document.getElementById('kullaniciFilter');
         const sortOrder = document.getElementById('sortOrder');
         const applyFiltersBtn = document.getElementById('applyFilters');
         const clearFiltersBtn = document.getElementById('clearFilters');
@@ -324,6 +331,7 @@
                                         <span><i class="fas fa-calendar me-1"></i> ${instructionDate}</span>
                                         <span class="fw-bold"><i class="fas fa-money-bill-wave me-1"></i> ${amount}</span>
                                     </small>
+                                    ${instruction.olusturan_kullanici ? `<small class="text-muted d-block mt-1"><i class="fas fa-user me-1"></i> ${instruction.olusturan_kullanici}</small>` : ''}
                                 </p>
                                 <div class="d-flex gap-2">
                                     <button class="btn btn-outline-primary btn-sm detail-btn flex-fill" data-id="${instruction.id}">
@@ -373,6 +381,7 @@
                                 <th>Alıcı</th>
                                 <th>Tarih</th>
                                 <th>Tutar</th>
+                                <th>Oluşturan</th>
                                 <th>İşlemler</th>
                             </tr>
                         </thead>
@@ -392,6 +401,7 @@
                         <td class="small">${instruction.alici_firma?.name || '-'}</td>
                         <td>${instructionDate}</td>
                         <td class="fw-bold">${amount}</td>
+                        <td class="small">${instruction.olusturan_kullanici || '-'}</td>
                         <td>
                             <div class="d-flex gap-2">
                                 <button class="btn btn-outline-primary btn-sm detail-btn" data-id="${instruction.id}">
@@ -555,6 +565,20 @@
                 `;
             }
 
+            // Add creator info
+            detailHtml += `
+                <div class="col-12 mt-3">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <td><strong>Oluşturan Kişi:</strong></td>
+                                <td><i class="fas fa-user me-1 text-muted"></i>${instruction.olusturan_kullanici || '-'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
             detailHtml += `</div>`;
 
             modalBody.innerHTML = detailHtml;
@@ -619,6 +643,7 @@
             const firmaFilter = grupFirmaFilter.value;
             const dateFrom = dateFromFilter.value;
             const dateTo = dateToFilter.value;
+            const kullaniciFilterVal = kullaniciFilter.value;
 
             filteredInstructions = allInstructions.filter(instruction => {
                 // Type filter
@@ -646,6 +671,13 @@
                     const instructionDate = new Date(instruction.talimat_tarihi);
                     const toDate = new Date(dateTo);
                     if (instructionDate > toDate) {
+                        return false;
+                    }
+                }
+
+                // Oluşturan Kişi filter
+                if (kullaniciFilterVal !== 'all') {
+                    if (instruction.olusturan_kullanici !== kullaniciFilterVal) {
                         return false;
                     }
                 }
@@ -690,6 +722,7 @@
             instructionTypeFilter.value = 'all';
             dateFromFilter.value = '';
             dateToFilter.value = '';
+            kullaniciFilter.value = 'all';
             sortOrder.value = 'instruction_number.desc';
             filteredInstructions = [...allInstructions];
             renderInstructions(filteredInstructions);
@@ -708,6 +741,21 @@
             });
             
             grupFirmaFilter.innerHTML = optionsHtml;
+        }
+
+        // Populate Kullanıcı Filter
+        function populateKullaniciFilter(instructions) {
+            const kullanicilar = [...new Set(instructions
+                .filter(i => i.olusturan_kullanici)
+                .map(i => i.olusturan_kullanici))]
+                .sort();
+            
+            let optionsHtml = '<option value="all">Tüm Kullanıcılar</option>';
+            kullanicilar.forEach(kullanici => {
+                optionsHtml += `<option value="${kullanici}">${kullanici}</option>`;
+            });
+            
+            kullaniciFilter.innerHTML = optionsHtml;
         }
 
         // Load instructions from Supabase
@@ -731,6 +779,7 @@
                 allInstructions = data;
                 filteredInstructions = [...allInstructions];
                 populateFirmaFilter(allInstructions);
+                populateKullaniciFilter(allInstructions);
                 renderInstructions(filteredInstructions);
             } catch (error) {
                 console.error('Talimatlar yüklenirken hata oluştu:', error);
