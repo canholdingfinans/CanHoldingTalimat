@@ -92,13 +92,21 @@
                 <!-- Filter Section -->
                 <div class="filter-section">
                     <div class="row align-items-end">
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-3 mb-3">
+                            <label for="grupPrefixFilter" class="form-label">Grup</label>
+                            <select class="form-select" id="grupPrefixFilter">
+                                <option value="all">Hepsi</option>
+                                <option value="ENJ">Enerji (ENJ)</option>
+                                <option value="TCT">Tectone (TCT)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
                             <label for="grupFirmaFilter" class="form-label">Gönderici Firma</label>
                             <select class="form-select" id="grupFirmaFilter">
                                 <option value="all">Tüm Firmalar</option>
                             </select>
                         </div>
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label for="instructionTypeFilter" class="form-label">Talimat Türü</label>
                             <select class="form-select" id="instructionTypeFilter">
                                 <option value="all">Tüm Türler</option>
@@ -109,21 +117,21 @@
                                 <option value="Döviz Alım/Satım">Döviz İşlemleri</option>
                             </select>
                         </div>
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label for="dateFromFilter" class="form-label">Başlangıç Tarihi</label>
                             <input type="date" class="form-control" id="dateFromFilter">
                         </div>
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label for="dateToFilter" class="form-label">Bitiş Tarihi</label>
                             <input type="date" class="form-control" id="dateToFilter">
                         </div>
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label for="kullaniciFilter" class="form-label">Oluşturan Kişi</label>
                             <select class="form-select" id="kullaniciFilter">
                                 <option value="all">Tüm Kullanıcılar</option>
                             </select>
                         </div>
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label for="sortOrder" class="form-label">Sırala</label>
                             <select class="form-select" id="sortOrder">
                                 <option value="instruction_number.desc">Talimat No (En Yeni)</option>
@@ -132,7 +140,7 @@
                                 <option value="talimat_tarihi.asc">Tarih (En Eski)</option>
                             </select>
                         </div>
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-3 mb-3">
                             <div class="d-flex gap-2 h-100 align-items-end">
                                 <button id="clearFilters" class="btn btn-outline-secondary w-50">
                                     <i class="fas fa-times"></i> Temizle
@@ -219,6 +227,7 @@
     <script type="module">
         // DOM Elements
         const instructionsContainer = document.getElementById('instructionsContainer');
+        const grupPrefixFilter = document.getElementById('grupPrefixFilter');
         const grupFirmaFilter = document.getElementById('grupFirmaFilter');
         const instructionTypeFilter = document.getElementById('instructionTypeFilter');
         const dateFromFilter = document.getElementById('dateFromFilter');
@@ -639,6 +648,7 @@
 
         // Apply filters and sorting
         function applyFilters() {
+            const prefixFilter = grupPrefixFilter.value;
             const typeFilter = instructionTypeFilter.value;
             const firmaFilter = grupFirmaFilter.value;
             const dateFrom = dateFromFilter.value;
@@ -646,6 +656,13 @@
             const kullaniciFilterVal = kullaniciFilter.value;
 
             filteredInstructions = allInstructions.filter(instruction => {
+                // Grup (Prefix) filter
+                if (prefixFilter !== 'all') {
+                    if (instruction.department_prefix !== prefixFilter) {
+                        return false;
+                    }
+                }
+
                 // Type filter
                 if (typeFilter !== 'all' && instruction.talimat_turu !== typeFilter) {
                     return false;
@@ -718,6 +735,7 @@
 
         // Clear filters
         function clearFilters() {
+            grupPrefixFilter.value = 'all';
             grupFirmaFilter.value = 'all';
             instructionTypeFilter.value = 'all';
             dateFromFilter.value = '';

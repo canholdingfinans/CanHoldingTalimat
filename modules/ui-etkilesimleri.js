@@ -191,6 +191,15 @@ const setupEventListeners = () => {
     if (bankaForm) {
         bankaForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            if (!bankaForm.checkValidity()) {
+                e.stopPropagation();
+                bankaForm.classList.add('was-validated');
+                return;
+            }
+            
+            bankaForm.classList.remove('was-validated');
+            
             const formData = new FormData(e.target);
             const bankaAdiVal = formData.get('bankaAdi');
             if (!bankaAdiVal || bankaAdiVal.trim() === '') {
