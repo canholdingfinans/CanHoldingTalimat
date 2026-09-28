@@ -172,6 +172,9 @@ const setupEventListeners = () => {
         }
     });
     
+    // Department changed event
+    window.addEventListener('departmentChanged', populateFormDropdowns);
+
     // Form events
     const firmaForm = document.getElementById('firmaForm');
     if (firmaForm) {
@@ -1492,6 +1495,17 @@ const populateFormDropdowns = () => {
                 filteredFirmalar = firmalar.filter(firma => firma.turu === filterType);
             }
             // 'all' or no filter means all firms
+
+            // Get current selected department
+            const currentDeptNode = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[type="hidden"][name="department_prefix"]');
+            const aktifBolum = currentDeptNode ? currentDeptNode.value : null;
+
+            // Gönderici kısıtlı (katı izolasyon), Alıcı serbest (virman izni)
+            if (aktifBolum && selectId !== 'aliciFirma') {
+                filteredFirmalar = filteredFirmalar.filter(firma => 
+                    !firma.department || firma.department === 'ORTAK' || firma.department === aktifBolum
+                );
+            }
             
             filteredFirmalar.forEach(firma => {
                 const option = new Option(firma.name, firma.id);
@@ -1737,6 +1751,7 @@ export const showFirmaModal = (firma = null) => {
         const firmaIdElement = document.getElementById('firmaId');
         const firmaAdiElement = document.getElementById('firmaAdi');
         const firmaTuruElement = document.getElementById('firmaTuru');
+        const firmaBolumuElement = document.getElementById('firmaBolumu');
         const firmaVknTcElement = document.getElementById('firmaVknTc');
         const firmaVergiDairesiElement = document.getElementById('firmaVergiDairesi');
         const firmaSGKSicilNoElement = document.getElementById('firmaSGKSicilNo');
@@ -1745,6 +1760,7 @@ export const showFirmaModal = (firma = null) => {
         if (firmaIdElement) firmaIdElement.value = firma.id;
         if (firmaAdiElement) firmaAdiElement.value = firma.name;
         if (firmaTuruElement) firmaTuruElement.value = firma.turu || '';
+        if (firmaBolumuElement) firmaBolumuElement.value = firma.department || 'ORTAK';
         if (firmaVknTcElement) firmaVknTcElement.value = firma.vkn_tc_no || '';
         if (firmaVergiDairesiElement) firmaVergiDairesiElement.value = firma.vergi_dairesi || '';
         if (firmaSGKSicilNoElement) firmaSGKSicilNoElement.value = firma.sgk_sicil_no || '';

@@ -237,37 +237,52 @@
                 <div class="modal-body">
                     <form id="firmaForm">
                         <input type="hidden" id="firmaId" name="firmaId">
-                        <div class="mb-3">
-                            <label for="firmaAdi" class="form-label">Firma Adı</label>
-                            <input type="text" class="form-control" id="firmaAdi" name="firmaAdi" required>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="firmaAdi" class="form-label">Firma Adı</label>
+                                <input type="text" class="form-control" id="firmaAdi" name="firmaAdi" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="firmaVknTc" class="form-label">Firma VKN/T.C. No (Opsiyonel)</label>
+                                <input type="text" class="form-control" id="firmaVknTc" name="firmaVknTc" placeholder="10 veya 11 haneli vergi numarası" maxlength="11">
+                                <div class="form-text">10 veya 11 haneli kimlik no</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="firmaVergiDairesi" class="form-label">Firma Vergi Dairesi (Opsiyonel)</label>
+                                <input type="text" class="form-control" id="firmaVergiDairesi" name="firmaVergiDairesi" placeholder="Vergi dairesi adı">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="firmaSGKSicilNo" class="form-label">SGK Sicil Numarası (Opsiyonel)</label>
+                                <input type="text" class="form-control" id="firmaSGKSicilNo" name="firmaSGKSicilNo" placeholder="SGK sicil numarası">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="firmaSGKAdi" class="form-label">SGK Adı (Opsiyonel)</label>
+                                <input type="text" class="form-control" id="firmaSGKAdi" name="firmaSGKAdi" placeholder="SGK adı">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="firmaTuru" class="form-label">Firma Türü</label>
+                                <select class="form-select" id="firmaTuru" name="firmaTuru" required>
+                                    <option value="">Seçiniz...</option>
+                                    <option value="grup">Grup</option>
+                                    <option value="satıcı">Satıcı</option>
+                                    <option value="müşteri">Müşteri</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="firmaBolumu" class="form-label">Firma Bölümü</label>
+                                <select class="form-select" id="firmaBolumu" name="firmaBolumu" required>
+                                    <option value="ORTAK">Ortak (Tüm Bölümler Görebilir)</option>
+                                    <option value="ENJ">Sadece Enerji (ENJ)</option>
+                                    <option value="TCT">Sadece Tectone (TCT)</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="firmaVknTc" class="form-label">Firma VKN/T.C. No (Opsiyonel)</label>
-                            <input type="text" class="form-control" id="firmaVknTc" name="firmaVknTc" placeholder="10 veya 11 haneli vergi numarası" maxlength="11">
-                            <div class="form-text">10 haneli Vergi Kimlik Numarası veya 11 haneli T.C. Kimlik Numarası</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="firmaVergiDairesi" class="form-label">Firma Vergi Dairesi (Opsiyonel)</label>
-                            <input type="text" class="form-control" id="firmaVergiDairesi" name="firmaVergiDairesi" placeholder="Vergi dairesi adı">
-                        </div>
-                        <div class="mb-3">
-                            <label for="firmaSGKSicilNo" class="form-label">SGK Sicil Numarası (Opsiyonel)</label>
-                            <input type="text" class="form-control" id="firmaSGKSicilNo" name="firmaSGKSicilNo" placeholder="SGK sicil numarası">
-                        </div>
-                        <div class="mb-3">
-                            <label for="firmaSGKAdi" class="form-label">SGK Adı (Opsiyonel)</label>
-                            <input type="text" class="form-control" id="firmaSGKAdi" name="firmaSGKAdi" placeholder="SGK adı">
-                        </div>
-                        <div class="mb-3">
-                            <label for="firmaTuru" class="form-label">Firma Türü</label>
-                            <select class="form-select" id="firmaTuru" name="firmaTuru" required>
-                                <option value="">Seçiniz...</option>
-                                <option value="grup">Grup</option>
-                                <option value="satıcı">Satıcı</option>
-                                <option value="müşteri">Müşteri</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Kaydet</button>
+
+                        <button type="submit" class="btn btn-primary w-100">Kaydet</button>
                     </form>
                     
                     <hr class="my-4">
@@ -278,6 +293,7 @@
                         <ul class="small text-muted mb-3">
                             <li><strong>Firma Adı</strong> (Zorunlu)</li>
                             <li><strong>Firma Türü</strong> (Zorunlu: 'grup', 'satıcı' veya 'müşteri')</li>
+                            <li><strong>Firma Bölümü</strong> (Opsiyonel: 'ENJ', 'TCT', boşsa 'ORTAK')</li>
                             <li>VKN/T.C. No (Opsiyonel)</li>
                             <li>Vergi Dairesi (Opsiyonel)</li>
                             <li>SGK Sicil No (Opsiyonel)</li>

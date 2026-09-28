@@ -66,7 +66,7 @@ export const fetchFirmalar = async (searchTerm = '', filterType = 'all') => {
  * @param {string} sgkAdi - Company SGK name (optional)
  * @returns {Promise<Object>} Created company object
  */
-export const addFirma = async (name, turu, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi) => {
+export const addFirma = async (name, turu, department, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi) => {
     try {
         // Validate inputs
         const nameValidation = validateFirmName(name);
@@ -90,7 +90,7 @@ export const addFirma = async (name, turu, vknTcNo, vergiDairesi, sgkSicilNo, sg
         }
 
         // Create company
-        const data = await firmaOperations.create(name.trim(), turu, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi);
+        const data = await firmaOperations.create(name.trim(), turu, department, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi);
         
         // Add to local array
         data.bankalar = [];
@@ -137,11 +137,11 @@ export const addFirmaBulk = async (firmsArray) => {
             const key = firm.name.toLowerCase().trim();
             if (mevcutMap.has(key)) {
                 const mevcut = mevcutMap.get(key);
-                sonucMap.set(key, { id: mevcut.id, turu: mevcut.turu, name: mevcut.name, yeni: false });
+                sonucMap.set(key, { id: mevcut.id, turu: mevcut.turu, department: mevcut.department, name: mevcut.name, yeni: false });
             } else if (!sonucMap.has(key)) {
                 // aynı Excel içinde tekrar eden yeni firma adını tek kez kuyruğa al
                 yeniFirmalar.push(firm);
-                sonucMap.set(key, { id: null, turu: firm.turu, name: firm.name, yeni: true });
+                sonucMap.set(key, { id: null, turu: firm.turu, department: firm.department, name: firm.name, yeni: true });
             }
         }
 
@@ -151,7 +151,7 @@ export const addFirmaBulk = async (firmsArray) => {
                 d.bankalar = [];
                 firmalar.push(d);
                 const key = d.name.toLowerCase().trim();
-                sonucMap.set(key, { id: d.id, turu: d.turu, name: d.name, yeni: true });
+                sonucMap.set(key, { id: d.id, turu: d.turu, department: d.department, name: d.name, yeni: true });
             });
         }
 
@@ -171,7 +171,7 @@ export const addFirmaBulk = async (firmsArray) => {
  * @param {string} vergiDairesi - Company tax office (optional)
  * @returns {Promise<Object>} Updated company object
  */
-export const updateFirma = async (id, name, turu, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi) => {
+export const updateFirma = async (id, name, turu, department, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi) => {
     try {
         // Validate inputs
         const nameValidation = validateFirmName(name);
@@ -195,13 +195,14 @@ export const updateFirma = async (id, name, turu, vknTcNo, vergiDairesi, sgkSici
         }
 
         // Update company
-        const data = await firmaOperations.update(id, name.trim(), turu, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi);
+        const data = await firmaOperations.update(id, name.trim(), turu, department, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi);
         
         // Update local array
         const index = firmalar.findIndex(f => f.id == data.id);
         if (index !== -1) {
             firmalar[index].name = data.name;
             firmalar[index].turu = data.turu;
+            firmalar[index].department = data.department;
             firmalar[index].vkn_tc_no = data.vkn_tc_no;
             firmalar[index].vergi_dairesi = data.vergi_dairesi;
             firmalar[index].sgk_sicil_no = data.sgk_sicil_no;

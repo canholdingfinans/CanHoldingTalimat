@@ -345,6 +345,13 @@ async function loadUserDepartments() {
             `;
         });
         radioContainer.innerHTML = html;
+        
+        // Add event listeners for reactive UX
+        radioContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                window.dispatchEvent(new CustomEvent('departmentChanged'));
+            });
+        });
     } else {
         container.style.display = 'none';
         radioContainer.innerHTML = `<input type="hidden" name="department_prefix" value="${deps[0]}">`;
@@ -596,13 +603,13 @@ const setupExcelUploadEvents = () => {
             }
             
             const ws_data = [
-                ['Firma Adı', 'Firma Türü', 'VKN/T.C. No', 'Vergi Dairesi', 'SGK Sicil No', 'SGK Adı',
+                ['Firma Adı', 'Firma Türü', 'Firma Bölümü', 'VKN/T.C. No', 'Vergi Dairesi', 'SGK Sicil No', 'SGK Adı',
                  'Banka Adı', 'IBAN', 'Para Birimi', 'Şube Adı', 'Şube İli', 'SWIFT Kodu', 'Hesap No'],
-                ['Örnek Grup Firma A.Ş.', 'grup', '1234567890', 'Marmara V.D.', '', '',
+                ['Örnek Grup Firma A.Ş.', 'grup', 'ORTAK', '1234567890', 'Marmara V.D.', '', '',
                  'Ziraat Bankası', 'TR330006100519786457841326', 'TRY', 'Merkez Şube', 'İstanbul', '', ''],
-                ['Örnek Satıcı Ltd. Şti.', 'satıcı', '1111111111', 'Boğaziçi V.D.', '1234567', 'Örnek SGK',
+                ['Örnek Satıcı Ltd. Şti.', 'satıcı', 'ENJ', '1111111111', 'Boğaziçi V.D.', '1234567', 'Örnek SGK',
                  'İş Bankası', 'TR640006400000112345678901', 'TRY', '', '', 'ISBKTRIS', ''],
-                ['Örnek Müşteri A.Ş.', 'müşteri', '', '', '', '', '', '', '', '', '', '', '']
+                ['Örnek Müşteri A.Ş.', 'müşteri', 'TCT', '', '', '', '', '', '', '', '', '', '', '']
             ];
             const ws = window.XLSX.utils.aoa_to_sheet(ws_data);
             const wb = window.XLSX.utils.book_new();
@@ -651,28 +658,30 @@ const setupExcelUploadEvents = () => {
                         if (!name) continue;
 
                         let turu = row[1]?.toString().trim().toLowerCase();
-                        const vknTcNo = row[2]?.toString().trim() || null;
-                        const vergiDairesi = row[3]?.toString().trim() || null;
-                        const sgkSicilNo = row[4]?.toString().trim() || null;
-                        const sgkAdi = row[5]?.toString().trim() || null;
+                        let department = row[2]?.toString().trim().toUpperCase() || 'ORTAK';
+                        const vknTcNo = row[3]?.toString().trim() || null;
+                        const vergiDairesi = row[4]?.toString().trim() || null;
+                        const sgkSicilNo = row[5]?.toString().trim() || null;
+                        const sgkAdi = row[6]?.toString().trim() || null;
 
                         // Auto correct missing turkish chars
                         if (turu === 'satici') turu = 'satıcı';
                         if (turu === 'musteri') turu = 'müşteri';
+                        if (department !== 'ENJ' && department !== 'TCT') department = 'ORTAK';
 
                         const key = name.toLowerCase().trim();
                         if (!firmsMap.has(key)) {
-                            firmsMap.set(key, { name, turu, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi });
+                            firmsMap.set(key, { name, turu, department, vknTcNo, vergiDairesi, sgkSicilNo, sgkAdi });
                         }
 
-                        // Bank fields (G-M)
-                        const banka_adi = row[6]?.toString().trim();
-                        const iban = row[7]?.toString().trim();
-                        const para_birimi = row[8]?.toString().trim();
-                        const sube_adi = row[9]?.toString().trim();
-                        const sube_il = row[10]?.toString().trim();
-                        const swift_kodu = row[11]?.toString().trim();
-                        const hesap_no = row[12]?.toString().trim();
+                        // Bank fields (G-M shifted by 1 to H-N)
+                        const banka_adi = row[7]?.toString().trim();
+                        const iban = row[8]?.toString().trim();
+                        const para_birimi = row[9]?.toString().trim();
+                        const sube_adi = row[10]?.toString().trim();
+                        const sube_il = row[11]?.toString().trim();
+                        const swift_kodu = row[12]?.toString().trim();
+                        const hesap_no = row[13]?.toString().trim();
 
                         if (banka_adi) {
                             bankaSatirlari.push({
@@ -743,6 +752,7 @@ const handleFirmaFormSubmit = async (event) => {
         const firmaId = formData.get('firmaId');
         const firmaAdi = formData.get('firmaAdi')?.trim();
         const firmaTuru = formData.get('firmaTuru');
+        const firmaBolumu = formData.get('firmaBolumu');
         const firmaVknTc = formData.get('firmaVknTc')?.trim();
         const firmaVergiDairesi = formData.get('firmaVergiDairesi')?.trim();
         const firmaSGKSicilNo = formData.get('firmaSGKSicilNo')?.trim();
@@ -750,11 +760,11 @@ const handleFirmaFormSubmit = async (event) => {
         
         if (firmaId) {
             // Update existing firma
-            await updateFirma(firmaId, firmaAdi, firmaTuru, firmaVknTc, firmaVergiDairesi, firmaSGKSicilNo, firmaSGKAdi);
+            await updateFirma(firmaId, firmaAdi, firmaTuru, firmaBolumu, firmaVknTc, firmaVergiDairesi, firmaSGKSicilNo, firmaSGKAdi);
             showNotification('Firma başarıyla güncellendi!');
         } else {
             // Add new firma
-            await addFirma(firmaAdi, firmaTuru, firmaVknTc, firmaVergiDairesi, firmaSGKSicilNo, firmaSGKAdi);
+            await addFirma(firmaAdi, firmaTuru, firmaBolumu, firmaVknTc, firmaVergiDairesi, firmaSGKSicilNo, firmaSGKAdi);
             showNotification('Firma başarıyla eklendi!');
         }
         

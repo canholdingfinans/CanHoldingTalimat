@@ -64,16 +64,16 @@ export const firmaOperations = {
     },
 
     // Add new firm
-    async create(name, turu, vknTcNo = null, vergiDairesi = null, sgkSicilNo = null, sgkAdi = null) {
+    async create(name, turu, department = 'ORTAK', vknTcNo = null, vergiDairesi = null, sgkSicilNo = null, sgkAdi = null) {
         // Check if supabaseClient is properly initialized
         if (!supabaseClient || !supabaseClient.from) {
             console.warn('Supabase client not initialized, returning mock data');
-            return { id: Date.now(), name, turu, vkn_tc_no: vknTcNo, vergi_dairesi: vergiDairesi, sgk_sicil_no: sgkSicilNo, sgk_adi: sgkAdi };
+            return { id: Date.now(), name, turu, department, vkn_tc_no: vknTcNo, vergi_dairesi: vergiDairesi, sgk_sicil_no: sgkSicilNo, sgk_adi: sgkAdi };
         }
         
         const { data, error } = await supabaseClient
             .from('firms')
-            .insert([{ name, turu, vkn_tc_no: vknTcNo, vergi_dairesi: vergiDairesi, sgk_sicil_no: sgkSicilNo, sgk_adi: sgkAdi }])
+            .insert([{ name, turu, department, vkn_tc_no: vknTcNo, vergi_dairesi: vergiDairesi, sgk_sicil_no: sgkSicilNo, sgk_adi: sgkAdi }])
             .select()
             .single();
 
@@ -96,6 +96,7 @@ export const firmaOperations = {
         const dbFirms = firmsArray.map(firm => ({
             name: firm.name,
             turu: firm.turu,
+            department: firm.department || 'ORTAK',
             vkn_tc_no: firm.vknTcNo || null,
             vergi_dairesi: firm.vergiDairesi || null,
             sgk_sicil_no: firm.sgkSicilNo || null,
@@ -116,16 +117,16 @@ export const firmaOperations = {
     },
 
     // Update existing firm
-    async update(id, name, turu, vknTcNo = null, vergiDairesi = null, sgkSicilNo = null, sgkAdi = null) {
+    async update(id, name, turu, department = 'ORTAK', vknTcNo = null, vergiDairesi = null, sgkSicilNo = null, sgkAdi = null) {
         // Check if supabaseClient is properly initialized
         if (!supabaseClient || !supabaseClient.from) {
             console.warn('Supabase client not initialized, returning mock data');
-            return { id, name, turu, vkn_tc_no: vknTcNo, vergi_dairesi: vergiDairesi, sgk_sicil_no: sgkSicilNo, sgk_adi: sgkAdi };
+            return { id, name, turu, department, vkn_tc_no: vknTcNo, vergi_dairesi: vergiDairesi, sgk_sicil_no: sgkSicilNo, sgk_adi: sgkAdi };
         }
         
         const { data, error } = await supabaseClient
             .from('firms')
-            .update({ name, turu, vkn_tc_no: vknTcNo, vergi_dairesi: vergiDairesi, sgk_sicil_no: sgkSicilNo, sgk_adi: sgkAdi })
+            .update({ name, turu, department: department || 'ORTAK', vkn_tc_no: vknTcNo, vergi_dairesi: vergiDairesi, sgk_sicil_no: sgkSicilNo, sgk_adi: sgkAdi })
             .eq('id', id)
             .select()
             .single();
