@@ -3,7 +3,7 @@
  * Coordinates all modules and initializes the application
  */
 
-import { fetchFirmalar, addFirma, updateFirma, deleteFirma, findFirmaById, addFirmaBulk } from './modules/firmalar.js';
+import { fetchFirmalar, getFirmalar, addFirma, updateFirma, deleteFirma, findFirmaById, addFirmaBulk } from './modules/firmalar.js';
 import { addBanka, updateBanka, deleteBanka, addBankaBulk, formatIBAN } from './modules/bankalar.js';
 import { createHavaleEFTInstruction, createCariInstruction, createVergiInstruction as createVergiInstructionModule, createDovizInstruction, formatInstructionNumber, formatCurrency, formatDate, printInstruction, instructionTypes } from './modules/talimatlar.js';
 import { validateIBAN, validateCompanyTypeRequirements, validateHavaleEFTForm, validateCurrencyMatch, validateDovizForm } from './modules/validasyon.js';
@@ -245,6 +245,36 @@ window.generateMultiPaymentHavaleEFTTalimatCikti = generateMultiPaymentHavaleEFT
 let isAppInitializing = false;
 
 /**
+ * Oturum doğrulandıktan sonra uygulamayı ve firma verilerini tek seferde güvenle başlatır (Race condition korumalı)
+ */
+const startAppWithSession = async (session) => {
+    if (!session || !session.access_token) return;
+
+    const loginContainer = document.getElementById('loginContainer');
+    const appContainer = document.getElementById('appContainer');
+    if (loginContainer) loginContainer.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'block';
+
+    // Race condition kalkanı: Zaten firmalar hafızada varsa veya başlatma sürüyorsa tekrar yükleme yapma
+    if (getFirmalar().length > 0 || isAppInitializing) {
+        return;
+    }
+
+    isAppInitializing = true;
+    try {
+        console.log('Initializing UI...');
+        initializeUI();
+        console.log('Loading initial data...');
+        await loadInitialData();
+        await loadUserDepartments();
+    } catch (error) {
+        console.error('App initialization error:', error);
+    } finally {
+        isAppInitializing = false;
+    }
+};
+
+/**
  * Auth initialization and state management
  */
 const initAuth = async () => {
@@ -254,53 +284,21 @@ const initAuth = async () => {
     // Auth state listener
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
         console.log('Auth state changed:', event);
-        
         if (session) {
-            // Logged in
-            loginContainer.style.display = 'none';
-            appContainer.style.display = 'block';
-            
-            // Initialize app data if not already loaded
-            if (document.querySelectorAll('.firma-accordion-item').length === 0 && !isAppInitializing) {
-                isAppInitializing = true;
-                try {
-                    console.log('Initializing UI...');
-                    initializeUI();
-                    console.log('Loading initial data...');
-                    await loadInitialData();
-                    await loadUserDepartments();
-                } finally {
-                    isAppInitializing = false;
-                }
-            }
+            await startAppWithSession(session);
         } else {
-            // Logged out
-            loginContainer.style.display = 'flex';
-            appContainer.style.display = 'none';
+            if (loginContainer) loginContainer.style.display = 'flex';
+            if (appContainer) appContainer.style.display = 'none';
         }
     });
 
     // Check initial session
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
-        loginContainer.style.display = 'none';
-        appContainer.style.display = 'block';
-        
-        if (document.querySelectorAll('.firma-accordion-item').length === 0 && !isAppInitializing) {
-            isAppInitializing = true;
-            try {
-                console.log('Initializing UI...');
-                initializeUI();
-                console.log('Loading initial data...');
-                await loadInitialData();
-                await loadUserDepartments();
-            } finally {
-                isAppInitializing = false;
-            }
-        }
+        await startAppWithSession(session);
     } else {
-        loginContainer.style.display = 'flex';
-        appContainer.style.display = 'none';
+        if (loginContainer) loginContainer.style.display = 'flex';
+        if (appContainer) appContainer.style.display = 'none';
     }
 };
 
@@ -467,9 +465,6 @@ const loadInitialData = async () => {
  * Setup application-wide event listeners
  */
 const setupApplicationEvents = () => {
-    // Firm search/filter events
-    window.addEventListener('firmaSearchChanged', handleFirmaSearchChanged);
-    
     // Form submission events
     window.addEventListener('firmaFormSubmit', handleFirmaFormSubmit);
     window.addEventListener('bankaFormSubmit', handleBankaFormSubmit);
@@ -570,21 +565,6 @@ const setupSidebarEvents = () => {
             }
         }
     });
-};
-
-/**
- * Handle firma search/filter changes
- */
-const handleFirmaSearchChanged = async (event) => {
-    try {
-        const { searchTerm, filterType } = event.detail;
-        console.log('Search changed:', searchTerm, filterType);
-        await fetchFirmalar(searchTerm, filterType);
-        refreshUI();
-    } catch (error) {
-        console.error('Search/filter error:', error);
-        showNotification('Arama sırasında bir hata oluştu', 'error');
-    }
 };
 
 /**
@@ -716,6 +696,10 @@ const setupExcelUploadEvents = () => {
                     let bankaSonuc = null;
                     if (bankaSatirlari.length > 0) {
                         bankaSonuc = await addBankaBulk(bankaSatirlari, firmaResultMap);
+                        if (bankaSonuc && bankaSonuc.hatali && bankaSonuc.hatali.length > 0) {
+                            console.warn(`⚠️ [ExcelUpload] ${bankaSonuc.hatali.length} satırda doğrulama hatası tespit edildi:`);
+                            console.table(bankaSonuc.hatali);
+                        }
                     }
 
                     excelFileInput.value = '';

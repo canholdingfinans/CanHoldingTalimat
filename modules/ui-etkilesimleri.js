@@ -2,7 +2,7 @@
  * UI Etkileşimleri (UI Interactions) Module
  * Handles all DOM manipulation and user interface interactions
  */
-import { getFirmalar, findFirmaById } from './firmalar.js';
+import { getFirmalar, findFirmaById, deleteFirmalarBulk } from './firmalar.js';
 import { getBanksForFirma, getBankDisplayName, formatIBAN, checkCurrencyCompatibility } from './bankalar.js';
 import { instructionTypes, getCategoryInfo, getTodayString } from './talimatlar.js';
 import { validateSWIFTCode } from './validasyon.js';
@@ -11,6 +11,7 @@ import { BANKA_LISTESI, KATEGORI_SIRASI, getCanonicalBankaAdi } from './banka-li
 // Global variables for modals and UI elements
 let firmaModal, bankaModal;
 let currentInstructionType = 'havale-ic'; // Default to internal transfer
+let isBulkModeActive = false; // Admin bulk actions mode
 
 // Choices.js instances for dropdowns
 let choicesInstances = {};
@@ -239,6 +240,7 @@ const setupEventListeners = () => {
     // Setup additional components
     setupInstructionButtons();
     setupSearchAndFilter();
+    setupBulkActions();
 };
 
 /**
@@ -647,28 +649,227 @@ const setupInstructionButtons = () => {
  */
 const setupSearchAndFilter = () => {
     const firmaSearchInput = document.getElementById('firmaSearch');
+    const firmaTypeFilterSelect = document.getElementById('firmaTypeFilter');
+
+    const handleFilter = () => {
+        const query = (firmaSearchInput?.value || '').trim().toLowerCase();
+        const filterType = firmaTypeFilterSelect?.value || 'all';
+        const allFirmalar = getFirmalar();
+
+        // Kullanıcı arama kutusunu tamamen boşalttığında ve filtre 'all' ise tüm listeyi anında geri getir
+        if (query.length === 0 && filterType === 'all') {
+            renderFirmaAccordion(allFirmalar);
+            return;
+        }
+
+        const filteredList = allFirmalar.filter(firma => {
+            const nameMatch = !query || (firma.name && firma.name.toLowerCase().includes(query));
+            const vknMatch = !query || (firma.vkn_tc_no && firma.vkn_tc_no.toLowerCase().includes(query));
+            const searchMatch = nameMatch || vknMatch;
+            const typeMatch = (filterType === 'all') || (firma.turu === filterType);
+            return searchMatch && typeMatch;
+        });
+
+        renderFirmaAccordion(filteredList);
+    };
+
     if (firmaSearchInput) {
-        firmaSearchInput.addEventListener('input', () => {
-            window.dispatchEvent(new CustomEvent('firmaSearchChanged', {
-                detail: {
-                    searchTerm: firmaSearchInput.value,
-                    filterType: document.getElementById('firmaTypeFilter')?.value || 'all'
-                }
-            }));
+        firmaSearchInput.addEventListener('input', handleFilter);
+        firmaSearchInput.addEventListener('keyup', handleFilter);
+        firmaSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleFilter();
+            }
+        });
+    }
+
+    if (firmaTypeFilterSelect) {
+        firmaTypeFilterSelect.addEventListener('change', handleFilter);
+    }
+};
+
+/**
+ * Update the delete button counter based on checked bulk checkboxes
+ */
+export const updateBulkDeleteButtonCount = () => {
+    const deleteBtn = document.getElementById('bulkDeleteBtn');
+    if (!deleteBtn) return;
+    
+    const checkedBoxes = document.querySelectorAll('#firmaAccordion .bulk-checkbox:checked');
+    const count = checkedBoxes.length;
+    
+    deleteBtn.innerHTML = `<i class="fas fa-trash-alt me-1"></i> Seçilenleri Sil (${count})`;
+    deleteBtn.disabled = (count === 0);
+};
+
+/**
+ * Toggle or set bulk actions mode
+ */
+export const setBulkMode = (active) => {
+    isBulkModeActive = active;
+    
+    const toolbar = document.getElementById('bulkActionsToolbar');
+    const toggleBtn = document.getElementById('toggleBulkActionsBtn');
+    const quickSelect = document.getElementById('bulkQuickSelect');
+    
+    const checkboxes = document.querySelectorAll('#firmaAccordion .bulk-checkbox');
+    checkboxes.forEach(cb => {
+        if (isBulkModeActive) {
+            cb.classList.remove('d-none');
+        } else {
+            cb.classList.add('d-none');
+            cb.checked = false;
+        }
+    });
+    
+    if (toolbar) {
+        if (isBulkModeActive) {
+            toolbar.classList.remove('d-none');
+        } else {
+            toolbar.classList.add('d-none');
+        }
+    }
+    
+    if (toggleBtn) {
+        if (isBulkModeActive) {
+            toggleBtn.classList.remove('btn-outline-secondary');
+            toggleBtn.classList.add('btn-secondary');
+            toggleBtn.innerHTML = '<i class="fas fa-times me-1"></i> Toplu İşlemleri Kapat';
+        } else {
+            toggleBtn.classList.remove('btn-secondary');
+            toggleBtn.classList.add('btn-outline-secondary');
+            toggleBtn.innerHTML = '<i class="fas fa-tasks me-1"></i> Toplu İşlemler';
+        }
+    }
+    
+    if (quickSelect && !isBulkModeActive) {
+        quickSelect.value = '';
+    }
+    
+    updateBulkDeleteButtonCount();
+};
+
+/**
+ * Check if the active user is an admin (has multiple departments)
+ * and show/hide the bulk actions toggle button accordingly
+ */
+export const checkAdminStatus = () => {
+    const radioContainer = document.getElementById('departmentRadioButtons');
+    const toggleBtn = document.getElementById('toggleBulkActionsBtn');
+    if (!toggleBtn) return;
+    
+    const radioCount = radioContainer ? radioContainer.querySelectorAll('input[type="radio"]').length : 0;
+    const isAdmin = radioCount > 1;
+    
+    if (isAdmin) {
+        toggleBtn.classList.remove('d-none');
+    } else {
+        toggleBtn.classList.add('d-none');
+        if (isBulkModeActive) {
+            setBulkMode(false);
+        }
+    }
+};
+
+/**
+ * Setup bulk actions toolbar events and listeners
+ */
+export const setupBulkActions = () => {
+    const toggleBtn = document.getElementById('toggleBulkActionsBtn');
+    const quickSelect = document.getElementById('bulkQuickSelect');
+    const deleteBtn = document.getElementById('bulkDeleteBtn');
+    const firmaAccordion = document.getElementById('firmaAccordion');
+    
+    // Toggle bulk mode button
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            setBulkMode(!isBulkModeActive);
         });
     }
     
-    const firmaTypeFilterSelect = document.getElementById('firmaTypeFilter');
-    if (firmaTypeFilterSelect) {
-        firmaTypeFilterSelect.addEventListener('change', () => {
-            window.dispatchEvent(new CustomEvent('firmaSearchChanged', {
-                detail: {
-                    searchTerm: document.getElementById('firmaSearch')?.value || '',
-                    filterType: firmaTypeFilterSelect.value
+    // Quick select dropdown
+    if (quickSelect) {
+        quickSelect.addEventListener('change', (e) => {
+            const selectedType = e.target.value;
+            if (!selectedType) return;
+            
+            const checkboxes = document.querySelectorAll('#firmaAccordion .bulk-checkbox');
+            checkboxes.forEach(cb => {
+                const turu = (cb.dataset.turu || '').toLowerCase().trim();
+                if (selectedType === 'all') {
+                    cb.checked = true;
+                } else if (selectedType === 'clear') {
+                    cb.checked = false;
+                } else if (selectedType === 'satıcı' || selectedType === 'müşteri' || selectedType === 'grup') {
+                    cb.checked = (turu === selectedType);
                 }
-            }));
+            });
+            
+            updateBulkDeleteButtonCount();
+            e.target.value = '';
         });
     }
+    
+    // Bulk delete button click
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const checkedBoxes = document.querySelectorAll('#firmaAccordion .bulk-checkbox:checked');
+            const ids = Array.from(checkedBoxes).map(cb => cb.dataset.id).filter(Boolean);
+            
+            if (ids.length === 0) return;
+
+            if (!confirm(`Seçili ${ids.length} adet firmayı silmek istediğinizden emin misiniz?`)) {
+                return;
+            }
+
+            try {
+                deleteBtn.disabled = true;
+                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Siliniyor...';
+
+                await deleteFirmalarBulk(ids);
+
+                // UI akordiyonu güncelle
+                renderFirmaAccordion();
+
+                // Hızlı seçim menüsünü sıfırla
+                if (quickSelect) {
+                    quickSelect.value = '';
+                }
+            } catch (error) {
+                console.error('Toplu silme işleminde hata:', error);
+            } finally {
+                // İşlem başarılı olsa da hata alsa da buton durumunu geri çevir ve sayacı güncelle
+                updateBulkDeleteButtonCount();
+            }
+        });
+    }
+    
+    // Accordion delegated change event for bulk checkboxes
+    if (firmaAccordion) {
+        firmaAccordion.addEventListener('change', (e) => {
+            if (e.target.classList.contains('bulk-checkbox')) {
+                updateBulkDeleteButtonCount();
+            }
+        });
+    }
+    
+    // Observe departmentRadioButtons for dynamic admin detection
+    const radioContainer = document.getElementById('departmentRadioButtons');
+    if (radioContainer) {
+        const observer = new MutationObserver(() => {
+            checkAdminStatus();
+        });
+        observer.observe(radioContainer, { childList: true, subtree: true });
+    }
+    
+    // Also listen to departmentChanged custom event
+    window.addEventListener('departmentChanged', checkAdminStatus);
+    
+    // Initial admin check
+    checkAdminStatus();
 };
 
 /**
@@ -1664,14 +1865,21 @@ const handleSWIFTValidation = (e) => {
 /**
  * Render the firm/bank accordion UI
  */
-export const renderFirmaAccordion = () => {
+export const renderFirmaAccordion = (filteredList = null) => {
     const firmaAccordion = document.getElementById('firmaAccordion');
     if (!firmaAccordion) return;
     
-    const firmalar = getFirmalar();
+    const firmalar = filteredList !== null ? filteredList : getFirmalar();
     firmaAccordion.innerHTML = '';
     
     const sortedFirmalar = [...firmalar].sort((a, b) => a.name.localeCompare(b.name));
+    
+    if (sortedFirmalar.length === 0) {
+        const emptyEl = document.createElement('div');
+        emptyEl.className = 'text-center text-muted p-4';
+        emptyEl.innerHTML = '<i class="fas fa-search me-2"></i>Eşleşen firma bulunamadı.';
+        firmaAccordion.appendChild(emptyEl);
+    }
     
     sortedFirmalar.forEach(firma => {
         const bankaListesiHtml = (firma.bankalar || [])
@@ -1694,12 +1902,15 @@ export const renderFirmaAccordion = () => {
             `;
             }).join('');
 
+        const checkboxClass = isBulkModeActive ? 'form-check-input bulk-checkbox me-2' : 'form-check-input bulk-checkbox me-2 d-none';
+
         const firmaEl = document.createElement('div');
         firmaEl.classList.add('accordion-item');
         firmaEl.innerHTML = `
             <h2 class="accordion-header" id="heading-${firma.id}">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${firma.id}">
-                    ${firma.name}
+                <button class="accordion-button collapsed d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${firma.id}">
+                    <input type="checkbox" class="${checkboxClass}" data-id="${firma.id}" data-turu="${firma.turu || ''}">
+                    <span>${firma.name}</span>
                 </button>
             </h2>
             <div id="collapse-${firma.id}" class="accordion-collapse collapse" data-bs-parent="#firmaAccordion">
@@ -1719,10 +1930,25 @@ export const renderFirmaAccordion = () => {
                 </div>
             </div>
         `;
+
+        // Prevent collapse toggle when clicking directly on the bulk checkbox
+        const bulkCb = firmaEl.querySelector('.bulk-checkbox');
+        if (bulkCb) {
+            bulkCb.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+
         firmaAccordion.appendChild(firmaEl);
     });
     
-    populateFormDropdowns();
+    if (isBulkModeActive) {
+        updateBulkDeleteButtonCount();
+    }
+
+    if (filteredList === null) {
+        populateFormDropdowns();
+    }
 };
 
 /**

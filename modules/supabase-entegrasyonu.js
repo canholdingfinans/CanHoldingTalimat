@@ -30,6 +30,34 @@ if (typeof window !== 'undefined' && window.supabase && window.supabase.createCl
 }
 
 /**
+ * Bulk delete concurrency lock to prevent race conditions & double triggering
+ */
+let isBulkDeleteInProgress = false;
+
+/**
+ * Asenkron bir işlemi belirtilen süre içinde tamamlanmaya zorlar (Timeout Kalkanı)
+ * Supabase thenable nesnelerini güvenle Promise'e sarar ve süre aşımında kontrollü hata fırlatır.
+ * 
+ * @param {Promise|Object} promise - Supabase sorgusu veya asenkron işlem
+ * @param {number} ms - Zaman aşımı süresi (milisaniye, varsayılan: 10000ms = 10sn)
+ * @param {string} label - Telemetri ve hata mesajı etiketi
+ * @returns {Promise}
+ */
+const withTimeout = (promise, ms = 10000, label = 'Sorgu') => {
+    let timeoutId;
+    const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+            reject(new Error(`⏱️ [Timeout] ${label} ${ms / 1000} saniye içinde sunucudan yanıt alamadı.`));
+        }, ms);
+    });
+
+    return Promise.race([
+        Promise.resolve(promise).finally(() => clearTimeout(timeoutId)),
+        timeoutPromise
+    ]);
+};
+
+/**
  * Firma operations
  */
 export const firmaOperations = {
@@ -155,6 +183,149 @@ export const firmaOperations = {
                 throw new Error('Bu firma geçmiş bir talimatta kullanıldığı için silinemez. Silmek için öncelikle bu firmaya ait geçmiş talimatları arşivden (veya veritabanından) kaldırmalısınız.');
             }
             throw new Error(`Firma silinemedi: ${error.message}`);
+        }
+    },
+
+    // Delete multiple firms with Chunking and Race Condition Lock
+    async deleteBulk(ids) {
+        if (isBulkDeleteInProgress) {
+            console.warn('⚠️ [BulkDelete] Zaten devam eden bir toplu silme işlemi var, mükerrer istek engellendi.');
+            return { success: false, message: 'İşlem devam ediyor' };
+        }
+
+        if (!ids || ids.length === 0) {
+            console.log('ℹ️ [BulkDelete] Silinecek ID listesi boş.');
+            return { success: true, deletedIds: [], failedIds: [] };
+        }
+
+        // Convert string IDs to numbers for PostgreSQL bigint compatibility
+        const numericIds = ids.map(id => Number(id)).filter(id => !isNaN(id));
+
+        if (numericIds.length === 0) {
+            console.warn('⚠️ [BulkDelete] Geçerli sayısal ID bulunamadı.');
+            return { success: true, deletedIds: [], failedIds: [] };
+        }
+
+        isBulkDeleteInProgress = true;
+        console.log('🚀 [BulkDelete] 1. Fonksiyon başladı. Toplam ID sayısı:', numericIds.length);
+
+        // Check if supabaseClient is properly initialized
+        if (!supabaseClient || !supabaseClient.from) {
+            console.warn('⚠️ [BulkDelete] Supabase client başlatılamadı, işlem atlanıyor.');
+            isBulkDeleteInProgress = false;
+            return { success: true, deletedIds: numericIds, failedIds: [] };
+        }
+
+        try {
+            const usedIdsSet = new Set();
+
+            // 1. AŞAMA: ID'leri 20'şerli güvenli paketlere böl (Chunking)
+            const CHUNK_SIZE = 20;
+            const idChunks = [];
+            for (let i = 0; i < numericIds.length; i += CHUNK_SIZE) {
+                idChunks.push(numericIds.slice(i, i + CHUNK_SIZE));
+            }
+            console.log(`📦 [BulkDelete] ID'ler ${idChunks.length} adet güvenli pakete ayrıldı (Paket boyutu: ${CHUNK_SIZE}).`);
+
+            // 2. AŞAMA: Gönderici Kontrolleri (Paket Paket Sıralı Sorgulama - Timeout Kalkanlı)
+            console.log(`⏳ [BulkDelete] 2. Gönderici kontrolleri başlatılıyor (${idChunks.length} paket)...`);
+            for (let i = 0; i < idChunks.length; i++) {
+                const chunk = idChunks[i];
+                console.log(`⏳ [BulkDelete] 2.${i + 1}. Gönderici paketi sorgulanıyor (${chunk.length} ID)...`);
+
+                const { data, error } = await withTimeout(
+                    supabaseClient
+                        .from('payment_instructions')
+                        .select('gonderici_firma_id')
+                        .in('gonderici_firma_id', chunk),
+                    10000,
+                    `Gönderici Kontrolü (Paket ${i + 1})`
+                );
+
+                if (error) {
+                    console.error(`❌ [BulkDelete] Gönderici paket ${i + 1} hatası:`, error.message);
+                    throw new Error(`Talimat kontrolü yapılamadı: ${error.message}`);
+                }
+
+                (data || []).forEach(row => {
+                    if (row.gonderici_firma_id != null) {
+                        usedIdsSet.add(Number(row.gonderici_firma_id));
+                    }
+                });
+                console.log(`✅ [BulkDelete] 2.${i + 1}. Gönderici paketi tamamlandı.`);
+            }
+
+            // 3. AŞAMA: Alıcı Kontrolleri (Paket Paket Sıralı Sorgulama - Timeout Kalkanlı)
+            console.log(`⏳ [BulkDelete] 3. Alıcı kontrolleri başlatılıyor (${idChunks.length} paket)...`);
+            for (let i = 0; i < idChunks.length; i++) {
+                const chunk = idChunks[i];
+                console.log(`⏳ [BulkDelete] 3.${i + 1}. Alıcı paketi sorgulanıyor (${chunk.length} ID)...`);
+
+                const { data, error } = await withTimeout(
+                    supabaseClient
+                        .from('payment_instructions')
+                        .select('alici_firma_id')
+                        .in('alici_firma_id', chunk),
+                    10000,
+                    `Alıcı Kontrolü (Paket ${i + 1})`
+                );
+
+                if (error) {
+                    console.error(`❌ [BulkDelete] Alıcı paket ${i + 1} hatası:`, error.message);
+                    throw new Error(`Talimat kontrolü yapılamadı: ${error.message}`);
+                }
+
+                (data || []).forEach(row => {
+                    if (row.alici_firma_id != null) {
+                        usedIdsSet.add(Number(row.alici_firma_id));
+                    }
+                });
+                console.log(`✅ [BulkDelete] 3.${i + 1}. Alıcı paketi tamamlandı.`);
+            }
+
+            // 4. AŞAMA: Ayrıştırma (Temiz vs Kullanımda Olanlar)
+            const failedIds = numericIds.filter(id => usedIdsSet.has(id));
+            const cleanIds = numericIds.filter(id => !usedIdsSet.has(id));
+            console.log('📊 [BulkDelete] 4. Ayrıştırma tamamlandı. Temiz ID\'ler:', cleanIds, 'Talimatlı (Korumaya alınan) ID\'ler:', failedIds);
+
+            // 5. AŞAMA: Temiz ID'lerin Sıralı Güvenli Silinmesi (Timeout Kalkanlı)
+            const successfullyDeleted = [];
+            if (cleanIds.length > 0) {
+                console.log(`🗑️ [BulkDelete] 5. Sıralı Tekil Silme Başlatılıyor (${cleanIds.length} firma)...`);
+                for (const cleanId of cleanIds) {
+                    console.log(`⏳ [BulkDelete] 5a. Firma siliniyor: ID ${cleanId}...`);
+                    const { error: deleteError } = await withTimeout(
+                        supabaseClient
+                            .from('firms')
+                            .delete()
+                            .eq('id', cleanId),
+                        10000,
+                        `Firma Silme (ID ${cleanId})`
+                    );
+
+                    if (deleteError) {
+                        console.error(`❌ [BulkDelete] Firma ID ${cleanId} silinemedi:`, deleteError.message);
+                        failedIds.push(cleanId);
+                    } else {
+                        console.log(`✅ [BulkDelete] 5b. Firma ID ${cleanId} başarıyla silindi.`);
+                        successfullyDeleted.push(cleanId);
+                    }
+                }
+                console.log('✅ [BulkDelete] 6. Silme işlemi tamamlandı. Başarılı:', successfullyDeleted, 'Başarısız:', failedIds);
+            } else {
+                console.log('ℹ️ [BulkDelete] Silinecek temiz firma bulunamadı, tüm seçilenler geçmiş talimatlarda kullanımda.');
+            }
+
+            return {
+                success: true,
+                deletedIds: successfullyDeleted,
+                failedIds: failedIds
+            };
+        } catch (error) {
+            console.error('❌ [BulkDelete] deleteBulk genel hatası:', error);
+            throw error;
+        } finally {
+            isBulkDeleteInProgress = false;
         }
     },
 

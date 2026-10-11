@@ -254,12 +254,17 @@ export const addBankaBulk = async (bankaSatirlari, firmaMap) => {
             continue;
         }
         const isGrup = firma.turu === 'grup';
-        if (isGrup && (!satir.sube_adi?.trim() || !satir.sube_il?.trim())) {
-            hatali.push({ satirNo: satir.satirNo, sebep: 'Grup firmaları için Şube Adı ve Şube İli zorunludur.' });
-            continue;
+        // Grup firmalarında şube bilgisi boşsa varsayılan değer ata
+        const subeAdi = (satir.sube_adi?.trim()) || (isGrup ? 'Merkez' : null);
+        const subeIl = (satir.sube_il?.trim()) || (isGrup ? 'İstanbul' : null);
+
+        // Para birimi kontrolü: boş, tanımsız veya 'TL' ise otomatik 'TRY' değerine eşle
+        let paraBirimi = satir.para_birimi?.toString().trim().toUpperCase();
+        if (!paraBirimi || paraBirimi === 'TL') {
+            paraBirimi = 'TRY';
         }
+
         const gecerliParaBirimleri = ['TRY', 'USD', 'EUR', 'GBP', 'CHF'];
-        const paraBirimi = satir.para_birimi?.trim().toUpperCase();
         if (!gecerliParaBirimleri.includes(paraBirimi)) {
             hatali.push({ satirNo: satir.satirNo, sebep: `Geçersiz para birimi: ${satir.para_birimi}` });
             continue;
@@ -285,8 +290,8 @@ export const addBankaBulk = async (bankaSatirlari, firmaMap) => {
         gecerliSatirlar.push({
             firm_id: firma.id,
             banka_adi: canonicalBankaAdi,
-            sube_adi: satir.sube_adi?.trim() || null,
-            sube_il: satir.sube_il?.trim() || null,
+            sube_adi: subeAdi,
+            sube_il: subeIl,
             iban: cleanIban,
             para_birimi: paraBirimi,
             hesap_no: satir.hesap_no?.trim() || null,

@@ -84,9 +84,145 @@ export const KATEGORI_SIRASI = [
 ];
 
 export const LEGACY_ALIAS = {
+    // Akbank
     'AKBANK': 'AKBANK T.A.Ş.',
+    'AK BANK': 'AKBANK T.A.Ş.',
+    'AKBANK T.A.Ş': 'AKBANK T.A.Ş.',
+    'AKBANK A.Ş.': 'AKBANK T.A.Ş.',
+
+    // Vakıfbank
     'VAKIFBANK': 'TÜRKİYE VAKIFLAR BANKASI T.A.O.',
+    'VAKIF BANK': 'TÜRKİYE VAKIFLAR BANKASI T.A.O.',
+    'VAKIFLAR BANKASI': 'TÜRKİYE VAKIFLAR BANKASI T.A.O.',
+    'TÜRKİYE VAKIFLAR BANKASI': 'TÜRKİYE VAKIFLAR BANKASI T.A.O.',
+    'TURKIYE VAKIFLAR BANKASI': 'TÜRKİYE VAKIFLAR BANKASI T.A.O.',
+
+    // Ziraat Bankası
+    'ZİRAAT': 'T.C. ZİRAAT BANKASI A.Ş.',
+    'ZIRAAT': 'T.C. ZİRAAT BANKASI A.Ş.',
     'ZİRAAT BANKASI': 'T.C. ZİRAAT BANKASI A.Ş.',
+    'ZIRAAT BANKASI': 'T.C. ZİRAAT BANKASI A.Ş.',
+    'T.C. ZİRAAT BANKASI': 'T.C. ZİRAAT BANKASI A.Ş.',
+    'TC ZIRAAT BANKASI': 'T.C. ZİRAAT BANKASI A.Ş.',
+
+    // İş Bankası
+    'İŞ BANKASI': 'TÜRKİYE İŞ BANKASI A.Ş.',
+    'IS BANKASI': 'TÜRKİYE İŞ BANKASI A.Ş.',
+    'İŞBANK': 'TÜRKİYE İŞ BANKASI A.Ş.',
+    'ISBANK': 'TÜRKİYE İŞ BANKASI A.Ş.',
+    'İŞ BANK': 'TÜRKİYE İŞ BANKASI A.Ş.',
+    'IS BANK': 'TÜRKİYE İŞ BANKASI A.Ş.',
+    'TÜRKİYE İŞ BANKASI': 'TÜRKİYE İŞ BANKASI A.Ş.',
+    'TURKIYE IS BANKASI': 'TÜRKİYE İŞ BANKASI A.Ş.',
+
+    // Garanti / Garanti BBVA
+    'GARANTİ': 'TÜRKİYE GARANTİ BANKASI A.Ş.',
+    'GARANTI': 'TÜRKİYE GARANTİ BANKASI A.Ş.',
+    'GARANTİ BBVA': 'TÜRKİYE GARANTİ BANKASI A.Ş.',
+    'GARANTI BBVA': 'TÜRKİYE GARANTİ BANKASI A.Ş.',
+    'GARANTİ BANKASI': 'TÜRKİYE GARANTİ BANKASI A.Ş.',
+    'GARANTI BANKASI': 'TÜRKİYE GARANTİ BANKASI A.Ş.',
+    'TÜRKİYE GARANTİ BANKASI': 'TÜRKİYE GARANTİ BANKASI A.Ş.',
+    'TURKIYE GARANTI BANKASI': 'TÜRKİYE GARANTİ BANKASI A.Ş.',
+
+    // Yapı Kredi
+    'YAPI KREDİ': 'YAPI VE KREDİ BANKASI A.Ş.',
+    'YAPI KREDI': 'YAPI VE KREDİ BANKASI A.Ş.',
+    'YAPIKREDİ': 'YAPI VE KREDİ BANKASI A.Ş.',
+    'YAPIKREDI': 'YAPI VE KREDİ BANKASI A.Ş.',
+    'YAPI VE KREDİ': 'YAPI VE KREDİ BANKASI A.Ş.',
+    'YAPI VE KREDI': 'YAPI VE KREDİ BANKASI A.Ş.',
+    'YAPI KREDİ BANKASI': 'YAPI VE KREDİ BANKASI A.Ş.',
+    'YAPI KREDI BANKASI': 'YAPI VE KREDİ BANKASI A.Ş.',
+
+    // Halkbank
+    'HALKBANK': 'TÜRKİYE HALK BANKASI A.Ş.',
+    'HALK BANK': 'TÜRKİYE HALK BANKASI A.Ş.',
+    'HALK BANKASI': 'TÜRKİYE HALK BANKASI A.Ş.',
+    'TÜRKİYE HALK BANKASI': 'TÜRKİYE HALK BANKASI A.Ş.',
+    'TURKIYE HALK BANKASI': 'TÜRKİYE HALK BANKASI A.Ş.',
+
+    // Denizbank
+    'DENİZBANK': 'DENİZBANK A.Ş.',
+    'DENIZBANK': 'DENİZBANK A.Ş.',
+    'DENİZ BANK': 'DENİZBANK A.Ş.',
+    'DENIZ BANK': 'DENİZBANK A.Ş.',
+
+    // QNB / Finansbank
+    'QNB': 'QNB BANK A.Ş.',
+    'QNB BANK': 'QNB BANK A.Ş.',
+    'QNB FİNANSBANK': 'QNB BANK A.Ş.',
+    'QNB FINANSBANK': 'QNB BANK A.Ş.',
+    'FİNANSBANK': 'QNB BANK A.Ş.',
+    'FINANSBANK': 'QNB BANK A.Ş.',
+
+    // TEB
+    'TEB': 'TÜRK EKONOMİ BANKASI A.Ş.',
+    'TÜRK EKONOMİ BANKASI': 'TÜRK EKONOMİ BANKASI A.Ş.',
+    'TURK EKONOMI BANKASI': 'TÜRK EKONOMİ BANKASI A.Ş.',
+
+    // Kuveyt Türk
+    'KUVEYT TÜRK': 'KUVEYT TÜRK KATILIM BANKASI A.Ş.',
+    'KUVEYT TURK': 'KUVEYT TÜRK KATILIM BANKASI A.Ş.',
+    'KUVEYTTÜRK': 'KUVEYT TÜRK KATILIM BANKASI A.Ş.',
+    'KUVEYTTURK': 'KUVEYT TÜRK KATILIM BANKASI A.Ş.',
+    'KUVEYT TÜRK KATILIM BANKASI': 'KUVEYT TÜRK KATILIM BANKASI A.Ş.',
+
+    // Albaraka
+    'ALBARAKA': 'ALBARAKA TÜRK KATILIM BANKASI A.Ş.',
+    'ALBARAKA TÜRK': 'ALBARAKA TÜRK KATILIM BANKASI A.Ş.',
+    'ALBARAKA TURK': 'ALBARAKA TÜRK KATILIM BANKASI A.Ş.',
+
+    // Türkiye Finans
+    'TÜRKİYE FİNANS': 'TÜRKİYE FİNANS KATILIM BANKASI A.Ş.',
+    'TURKIYE FINANS': 'TÜRKİYE FİNANS KATILIM BANKASI A.Ş.',
+    'TÜRKIYE FINANS': 'TÜRKİYE FİNANS KATILIM BANKASI A.Ş.',
+    'TÜRKİYE FİNANS KATILIM': 'TÜRKİYE FİNANS KATILIM BANKASI A.Ş.',
+    'TURKIYE FINANS KATILIM': 'TÜRKİYE FİNANS KATILIM BANKASI A.Ş.',
+    'TÜRKİYE FİNANS KATILIM BANKASI': 'TÜRKİYE FİNANS KATILIM BANKASI A.Ş.',
+    'TURKIYE FINANS KATILIM BANKASI': 'TÜRKİYE FİNANS KATILIM BANKASI A.Ş.',
+
+    // Katılım Bankaları
+    'ZİRAAT KATILIM': 'ZİRAAT KATILIM BANKASI A.Ş.',
+    'ZIRAAT KATILIM': 'ZİRAAT KATILIM BANKASI A.Ş.',
+    'VAKIF KATILIM': 'VAKIF KATILIM BANKASI A.Ş.',
+    'EMLAK KATILIM': 'TÜRKİYE EMLAK KATILIM BANKASI A.Ş.',
+    'EMLAK KATILIM BANKASI': 'TÜRKİYE EMLAK KATILIM BANKASI A.Ş.',
+    'TÜRKİYE EMLAK KATILIM': 'TÜRKİYE EMLAK KATILIM BANKASI A.Ş.',
+    'TURKIYE EMLAK KATILIM': 'TÜRKİYE EMLAK KATILIM BANKASI A.Ş.',
+    'TÜRKİYE EMLAK KATILIM BANKASI': 'TÜRKİYE EMLAK KATILIM BANKASI A.Ş.',
+    'TURKIYE EMLAK KATILIM BANKASI': 'TÜRKİYE EMLAK KATILIM BANKASI A.Ş.',
+
+    // ICBC
+    'ICBC': 'ICBC TURKEY BANK A.Ş.',
+    'ICBC TURKEY': 'ICBC TURKEY BANK A.Ş.',
+    'ICBC BANK': 'ICBC TURKEY BANK A.Ş.',
+    'ICBC TURKEY BANK': 'ICBC TURKEY BANK A.Ş.',
+
+    // Diğer Mevduat & Yatırım
+    'ENPARA': 'ENPARA BANK A.Ş.',
+    'ENPARA BANK': 'ENPARA BANK A.Ş.',
+    'FİBABANKA': 'FİBABANKA A.Ş.',
+    'FIBABANKA': 'FİBABANKA A.Ş.',
+    'HSBC': 'HSBC BANK A.Ş.',
+    'HSBC BANK': 'HSBC BANK A.Ş.',
+    'ING': 'ING BANK A.Ş.',
+    'ING BANK': 'ING BANK A.Ş.',
+    'ODEABANK': 'ODEA BANK A.Ş.',
+    'ODEA BANK': 'ODEA BANK A.Ş.',
+    'ŞEKERBANK': 'ŞEKERBANK T.A.Ş.',
+    'SEKERBANK': 'ŞEKERBANK T.A.Ş.',
+    'BURGAN': 'BURGAN BANK A.Ş.',
+    'BURGAN BANK': 'BURGAN BANK A.Ş.',
+    'AKTİFBANK': 'AKTİF YATIRIM BANKASI A.Ş.',
+    'AKTIFBANK': 'AKTİF YATIRIM BANKASI A.Ş.',
+    'AKTİF BANK': 'AKTİF YATIRIM BANKASI A.Ş.',
+    'AKTIF BANK': 'AKTİF YATIRIM BANKASI A.Ş.',
+    'ANADOLUBANK': 'ANADOLUBANK A.Ş.',
+    'ANADOLU BANK': 'ANADOLUBANK A.Ş.',
+    'ALTERNATİFBANK': 'ALTERNATİFBANK A.Ş.',
+    'ALTERNATIFBANK': 'ALTERNATİFBANK A.Ş.',
+    'CITIBANK': 'CITIBANK A.Ş.'
 };
 
 /**
@@ -94,27 +230,29 @@ export const LEGACY_ALIAS = {
  */
 export const normalizeBankaAdi = (name) => {
     if (!name || typeof name !== 'string') return '';
-    // We replace multiple spaces with a single space to allow matching "AK BANK" -> "AK BANK" etc. if needed
-    // However, the user asked for "akbank t.a.ş." (noktasız) to match "AKBANK T.A.Ş."
-    // Let's make the normalizer robust.
     return name
         .trim()
         .replace(/\s+/g, ' ')
         .toUpperCase()
-        .replace('I', 'I') // handle turkish I/i issues if necessary? toUpperCase usually does it ok.
+        .replace('I', 'I')
         .replace('İ', 'İ');
 };
 
 /**
- * Normalizes heavily to create a match-friendly string: removes all punctuation and spaces.
- * e.g. "AKBANK T.A.Ş." -> "AKBANKTAŞ"
- * "ak bank" -> "AKBANK"
+ * Normalizes heavily to create a match-friendly string: removes all punctuation, spaces,
+ * and normalizes Turkish characters for maximum tolerance.
  */
 const getStrippedName = (name) => {
     return (name || '')
         .toUpperCase()
         .replace(/[\s\.,\-']/g, '') // remove spaces, dots, commas, hyphens
-        .replace(/İ/g, 'I');
+        .replace(/İ/g, 'I')
+        .replace(/ı/g, 'I')
+        .replace(/Ş/g, 'S')
+        .replace(/Ğ/g, 'G')
+        .replace(/Ü/g, 'U')
+        .replace(/Ö/g, 'O')
+        .replace(/Ç/g, 'C');
 };
 
 // Create a precomputed map of stripped canonical names to their exact forms.

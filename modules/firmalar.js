@@ -237,6 +237,56 @@ export const deleteFirma = async (id) => {
 };
 
 /**
+ * Delete multiple companies with two-step pre-check
+ * @param {Array<string|number>} ids - Company IDs to delete
+ * @returns {Promise<{success: boolean, deletedIds: Array, failedIds: Array}>}
+ */
+export const deleteFirmalarBulk = async (ids) => {
+    try {
+        const result = await firmaOperations.deleteBulk(ids);
+        if (!result) {
+            throw new Error('İşlemden sonuç alınamadı.');
+        }
+
+        const { deletedIds = [], failedIds = [] } = result;
+
+        // Yerel state'den (firmalar dizisi) silinenleri temizle
+        if (deletedIds && deletedIds.length > 0) {
+            const deletedSet = new Set(deletedIds.map(id => String(id)));
+            for (let i = firmalar.length - 1; i >= 0; i--) {
+                if (deletedSet.has(String(firmalar[i].id))) {
+                    firmalar.splice(i, 1);
+                }
+            }
+        }
+
+        // Kullanıcıya detaylı sonuç bildirimi göster
+        let messages = [];
+        if (deletedIds && deletedIds.length > 0) {
+            messages.push(`${deletedIds.length} firma başarıyla silindi.`);
+        }
+        if (failedIds && failedIds.length > 0) {
+            const failedNames = failedIds.map(id => {
+                const f = firmalar.find(item => String(item.id) === String(id));
+                return f ? f.name : id;
+            });
+            messages.push(`${failedIds.length} firma (${failedNames.join(', ')}) geçmiş talimatlarda kullanıldığı için silinemedi.`);
+        }
+
+        if (messages.length === 0) {
+            messages.push('Silinecek firma bulunamadı.');
+        }
+
+        alert(messages.join('\n\n'));
+        return result;
+    } catch (error) {
+        console.error('Toplu firma silinirken hata:', error);
+        alert(`Toplu silme hatası: ${error.message || 'Bilinmeyen bir hata oluştu'}`);
+        throw error;
+    }
+};
+
+/**
  * Validate tax number (VKN/T.C. No)
  * @param {string} vknTcNo - Tax number to validate
  * @returns {boolean} True if valid, false otherwise

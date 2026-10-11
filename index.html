@@ -165,7 +165,7 @@
             <div class="sidebar-container border-end bg-white" id="sidebarContainer">
                 <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
                     <div class="d-flex align-items-center">
-                        <h4 class="mb-0">Grup Firmalar</h4>
+                        <h4 class="mb-0">Firma Rehberi</h4>
                         <button class="btn btn-sm btn-link text-secondary ms-2" id="sidebarPinBtn" title="Menüyü Sabitle">
                             <i class="fas fa-thumbtack"></i>
                         </button>
@@ -182,6 +182,31 @@
                         <option value="satıcı">Satıcı</option>
                         <option value="müşteri">Müşteri</option>
                     </select>
+                </div>
+                <!-- Admin Toplu İşlemler Modu Toggle Butonu -->
+                <div class="mb-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 d-none" id="toggleBulkActionsBtn">
+                        <i class="fas fa-tasks me-1"></i> Toplu İşlemler
+                    </button>
+                </div>
+                <!-- Toplu İşlem Toolbar (Mod açıldığında görünür) -->
+                <div id="bulkActionsToolbar" class="p-2 mb-3 bg-light border rounded d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small fw-bold text-secondary"><i class="fas fa-check-square me-1"></i> Toplu Seçim</span>
+                    </div>
+                    <div class="mb-2">
+                        <select class="form-select form-select-sm" id="bulkQuickSelect">
+                            <option value="">Hızlı Seçim Yapınız...</option>
+                            <option value="all">Tümünü Seç</option>
+                            <option value="satıcı">Satıcıları Seç</option>
+                            <option value="müşteri">Müşterileri Seç</option>
+                            <option value="grup">Grup Firmalarını Seç</option>
+                            <option value="clear">Seçimi Temizle</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-sm w-100" id="bulkDeleteBtn" disabled>
+                        <i class="fas fa-trash-alt me-1"></i> Seçilenleri Sil (0)
+                    </button>
                 </div>
                 <div class="accordion" id="firmaAccordion">
                     <!-- Firma ve banka listesi buraya dinamik olarak eklenecek -->
