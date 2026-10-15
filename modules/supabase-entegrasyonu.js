@@ -645,22 +645,22 @@ export const talimatOperations = {
         return data;
     },
 
-    // Delete payment instruction by ID
+    // Soft delete (cancel) payment instruction by ID
     async deleteById(id) {
         // Check if supabaseClient is properly initialized
         if (!supabaseClient || !supabaseClient.from) {
-            console.warn('Supabase client not initialized, skipping delete operation');
+            console.warn('Supabase client not initialized, skipping cancel operation');
             return;
         }
         
         const { error } = await supabaseClient
             .from('payment_instructions')
-            .delete()
+            .update({ durum: 'iptal' })
             .eq('id', id);
 
         if (error) {
-            console.error('Talimat silinirken hata oluştu:', error.message);
-            throw new Error(`Talimat silinemedi: ${error.message}`);
+            console.error('Talimat iptal edilirken hata oluştu:', error.message);
+            throw new Error(`Talimat iptal edilemedi: ${error.message}`);
         }
     }
 };

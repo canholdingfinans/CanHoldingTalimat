@@ -219,6 +219,28 @@
                     <i class="fas fa-info-circle"></i> Lütfen yukarıdaki <strong>"Talimat Türü"</strong> butonundan işlem yapmak istediğiniz talimat türünü seçiniz.
                 </div>
 
+                <!-- Revision Banner (Görev 12.1) -->
+                <div id="revisionBanner" class="alert alert-warning d-none mb-3 shadow-sm border-warning" role="alert">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h6 class="alert-heading mb-1">
+                                <i class="fas fa-sync-alt me-2 text-warning"></i>
+                                <strong>Akıllı Revizyon Modu Aktif</strong>
+                            </h6>
+                            <p class="mb-0 small">
+                                Şu an
+                                <code id="revisionSourceNo" class="bg-dark text-white px-2 py-1 rounded">—</code>
+                                numaralı talimatı revize ediyorsunuz.
+                                <span class="text-danger fw-semibold">
+                                    ⚠️ Bölüm değiştirilirse yeni bölümün sayacından numara atanır.
+                                </span>
+                            </p>
+                        </div>
+                        <button type="button" class="btn btn-outline-dark btn-sm" id="cancelRevisionBtn">
+                            <i class="fas fa-times me-1"></i> Revizyonu İptal Et
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Department Selection Container (Görev 2) -->
                 <div class="row mt-2" id="departmentSelectionContainer" style="display: none;">

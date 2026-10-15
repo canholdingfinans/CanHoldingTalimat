@@ -48,6 +48,228 @@ export const initializeUI = () => {
 };
 
 /**
+ * Choices.js veya Native Select için güvenli firma seçimi yapar ve 'change' event'i tetikler.
+ * @param {string} selectId - Element ID
+ * @param {string|number} firmaId - Seçilecek firma ID'si
+ */
+export const setFirmaChoice = (selectId, firmaId) => {
+    if (!firmaId) return;
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    const valStr = String(firmaId);
+
+    // 1. Choices.js instance üzerinden seçim
+    if (choicesInstances[selectId] && typeof choicesInstances[selectId].setChoiceByValue === 'function') {
+        try {
+            choicesInstances[selectId].setChoiceByValue(valStr);
+        } catch (err) {
+            console.warn(`[Revizyon] Choices setChoiceByValue(${valStr}) uyarısı:`, err);
+        }
+    }
+
+    // 2. Native select değerini de doğrudan güvenceye al
+    select.value = valStr;
+
+    // 3. Banka doldurma mantığını tetiklemek için native change event'ini fırlat
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+};
+
+/**
+ * Banka dropdown'ında seçeneğin varlığını denetler, değeri atar ve 'change' event'i tetikler.
+ * @param {string} selectId - Element ID
+ * @param {string|number} bankaId - Seçilecek banka hesap ID'si
+ */
+export const setBankaChoice = (selectId, bankaId) => {
+    if (!bankaId) return;
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    const valStr = String(bankaId);
+
+    const tryApply = () => {
+        const optionExists = Array.from(select.options).some(opt => opt.value === valStr);
+        if (optionExists) {
+            select.value = valStr;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            return true;
+        }
+        return false;
+    };
+
+    // İlk deneme senkron olarak çalışır
+    if (!tryApply()) {
+        // Çok nadir DOM microtask veya rendering gecikmeleri için kısa poll (max 300ms)
+        let attempts = 0;
+        const poller = setInterval(() => {
+            attempts++;
+            if (tryApply() || attempts > 6) {
+                clearInterval(poller);
+            }
+        }, 50);
+    }
+};
+
+/**
+ * sessionStorage'dan revizyon verisini okur, formu ön-doldurur.
+ * URL'de ?mode=revision parametresi olduğunda çalışır.
+ * loadInitialData() ve loadUserDepartments() tamamlandıktan sonra çağrılmalıdır.
+ */
+export const checkRevisionMode = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') !== 'revision') return;
+
+    const revisionDataRaw = sessionStorage.getItem('revisionData');
+    if (!revisionDataRaw) {
+        console.warn('[Revizyon] mode=revision ama sessionStorage boş.');
+        return;
+    }
+
+    let revisionSource;
+    try {
+        revisionSource = JSON.parse(revisionDataRaw);
+    } catch (e) {
+        console.error('[Revizyon] Parse hatası:', e);
+        sessionStorage.removeItem('revisionData');
+        return;
+    }
+
+    // 1. Banner göster
+    const banner = document.getElementById('revisionBanner');
+    const sourceNoEl = document.getElementById('revisionSourceNo');
+    if (banner && sourceNoEl) {
+        sourceNoEl.textContent = revisionSource.instruction_number || '?';
+        banner.classList.remove('d-none');
+    }
+
+    // 2. Departman seçimi (Cross-Department / Çapraz Departman Desteği)
+    if (revisionSource.department_prefix) {
+        const depRadio = document.querySelector(`input[name="department_prefix"][value="${revisionSource.department_prefix}"]`);
+        if (depRadio) {
+            depRadio.checked = true;
+            depRadio.dispatchEvent(new Event('change'));
+        }
+    }
+
+    // 3. talimat_turu → typeKey dönüşümü ve formun oluşturulması
+    const typeKeyMap = {
+        'Havale/EFT':         'havale-ic',
+        'Vergi Ödemesi':      'vergi-kdv',
+        'SGK Ödemesi':        'sgk-prim',
+        'Gümrük Ödemesi':     'gumruk-vergi',
+        'Döviz Alım/Satım':   'doviz-alim',
+        'Cari Hesap Ödemesi': 'cari-satici',
+    };
+    let typeKey = typeKeyMap[revisionSource.talimat_turu] || 'havale-ic';
+    if (revisionSource.talimat_turu === 'Döviz Alım/Satım') {
+        typeKey = (revisionSource.doviz_islemi_turu === 'satım') ? 'doviz-satim' : 'doviz-alim';
+    }
+    if (revisionSource.vergi_turu && instructionTypes[revisionSource.vergi_turu]) {
+        typeKey = revisionSource.vergi_turu;
+    }
+
+    selectInstructionType(typeKey);
+
+    // 4. Deterministik pre-fill (Veriler ve form hazır olduğundan gecikmesiz çalışır)
+    prefillFormFromRevision(revisionSource);
+
+    // 5. İptal butonu
+    const cancelBtn = document.getElementById('cancelRevisionBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('revisionData');
+            banner?.classList.add('d-none');
+            window.history.replaceState({}, '', 'index.html');
+            showNotification('Revizyon modu iptal edildi.', 'info');
+        });
+    }
+};
+
+/**
+ * Kaynak talimat verisini form alanlarına doldurur.
+ * @param {Object} src - payment_instructions kaydı
+ */
+export const prefillFormFromRevision = (src) => {
+    if (!src) return;
+
+    // 1. Gönderici Firmalar (Tüm Form Tipleri)
+    if (src.gonderici_firma_id) {
+        setFirmaChoice('gondericiFirma', src.gonderici_firma_id);
+        setFirmaChoice('vergiGondericiFirma', src.gonderici_firma_id);
+        setFirmaChoice('sgkGondericiFirma', src.gonderici_firma_id);
+        setFirmaChoice('gumrukGondericiFirma', src.gonderici_firma_id);
+    }
+
+    // 2. Alıcı Firma (Havale / Cari / Döviz)
+    if (src.alici_firma_id) {
+        setFirmaChoice('aliciFirma', src.alici_firma_id);
+    }
+
+    // 3. Gönderici Banka Hesapları (Firma change event'i ile banka listesi dolduktan sonra seçilir)
+    if (src.gonderici_banka_hesap_id) {
+        setBankaChoice('gondericiBanka', src.gonderici_banka_hesap_id);
+        setBankaChoice('vergiGondericiBanka', src.gonderici_banka_hesap_id);
+        setBankaChoice('sgkGondericiBanka', src.gonderici_banka_hesap_id);
+        setBankaChoice('gumrukGondericiBanka', src.gonderici_banka_hesap_id);
+    }
+
+    // 4. Alıcı Banka Hesabı
+    if (src.alici_banka_hesap_id) {
+        setBankaChoice('aliciBanka', src.alici_banka_hesap_id);
+    }
+
+    // 5. Tutar ve Açıklama (Tüm form varyantları)
+    const tutarInput = document.getElementById('tutar') 
+        || document.getElementById('vergiTutar') 
+        || document.getElementById('sgkTutar') 
+        || document.getElementById('gumrukTutar');
+    if (tutarInput && src.tutar) {
+        tutarInput.value = src.tutar;
+        tutarInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    const aciklamaInput = document.getElementById('aciklama')
+        || document.getElementById('vergiAciklama')
+        || document.getElementById('sgkAciklama')
+        || document.getElementById('gumrukAciklama');
+    if (aciklamaInput && src.aciklama) {
+        aciklamaInput.value = src.aciklama;
+        aciklamaInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    // 6. Vergi / SGK / Gümrük alanları
+    const tahakkukEl = document.getElementById('tahakkukNo') || document.getElementById('sgkTahakkukNo');
+    if (tahakkukEl && src.tahakkuk_no) tahakkukEl.value = src.tahakkuk_no;
+
+    const sgkSicilEl = document.getElementById('sgkSicilNo');
+    if (sgkSicilEl && src.sgk_sicil_no) sgkSicilEl.value = src.sgk_sicil_no;
+
+    const vergiDairesiEl = document.getElementById('vergiDairesi');
+    if (vergiDairesiEl && src.vergi_dairesi) vergiDairesiEl.value = src.vergi_dairesi;
+
+    const vergiKimlikNoEl = document.getElementById('vergiKimlikNo');
+    if (vergiKimlikNoEl && src.vergi_kimlik_no) vergiKimlikNoEl.value = src.vergi_kimlik_no;
+
+    const vergiDonemEl = document.getElementById('vergiDonem') || document.getElementById('sgkDonem');
+    if (vergiDonemEl && src.vergi_donem) vergiDonemEl.value = src.vergi_donem;
+
+    const gumrukBeyannameNoEl = document.getElementById('gumrukBeyannameNo');
+    if (gumrukBeyannameNoEl && src.gumruk_beyanname_no) gumrukBeyannameNoEl.value = src.gumruk_beyanname_no;
+
+    // 7. Döviz-spesifik alanlar
+    if (src.talimat_turu === 'Döviz Alım/Satım') {
+        const dovizMiktariEl = document.getElementById('dovizMiktari');
+        const kurEl = document.getElementById('kur');
+        const dovizCinsiEl = document.getElementById('dovizCinsi');
+        if (dovizMiktariEl && src.doviz_miktari) dovizMiktariEl.value = src.doviz_miktari;
+        if (kurEl && src.kur) kurEl.value = src.kur;
+        if (dovizCinsiEl && src.doviz_cinsi) dovizCinsiEl.value = src.doviz_cinsi;
+    }
+
+    console.log('[Revizyon] Form ön-doldurma başarıyla tamamlandı:', src.instruction_number);
+};
+
+/**
  * Set today's date for date inputs
  */
 const setTodayDates = () => {

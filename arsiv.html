@@ -132,6 +132,17 @@
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
+                            <label for="durumFilter" class="form-label">
+                                <i class="fas fa-circle-dot me-1"></i>Durum
+                            </label>
+                            <select class="form-select" id="durumFilter">
+                                <option value="aktif" selected>✅ Aktif Talimatlar</option>
+                                <option value="all">🔍 Tümünü Göster</option>
+                                <option value="revize_edildi">🔄 Revize Edilmiş</option>
+                                <option value="iptal">🚫 İptal Edilmiş</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
                             <label for="sortOrder" class="form-label">Sırala</label>
                             <select class="form-select" id="sortOrder">
                                 <option value="instruction_number.desc">Talimat No (En Yeni)</option>
@@ -202,16 +213,16 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Talimatı Sil</h5>
+                    <h5 class="modal-title" id="deleteModalLabel">Talimatı İptal Et</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Bu talimatı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+                    <p>Bu talimatı <strong>İPTAL ETMEK</strong> istediğinizden emin misiniz? İptal edilen talimatlar arşivde 'İptal' statüsünde saklanır ve denetim izi korunur.</p>
                     <p id="deleteInstructionInfo"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Sil</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="fas fa-ban me-1"></i> İptal Et</button>
                 </div>
             </div>
         </div>
@@ -233,6 +244,7 @@
         const dateFromFilter = document.getElementById('dateFromFilter');
         const dateToFilter = document.getElementById('dateToFilter');
         const kullaniciFilter = document.getElementById('kullaniciFilter');
+        const durumFilter = document.getElementById('durumFilter');
         const sortOrder = document.getElementById('sortOrder');
         const applyFiltersBtn = document.getElementById('applyFilters');
         const clearFiltersBtn = document.getElementById('clearFilters');
@@ -316,13 +328,30 @@
                 const instructionDate = instruction.talimat_tarihi ? formatDate(instruction.talimat_tarihi) : 'Belirtilmemiş';
                 const amount = instruction.tutar ? formatCurrency(instruction.tutar, instruction.para_birimi) : 'Belirtilmemiş';
 
+                const durum = instruction.durum || 'aktif';
+                const durumBadgeMap = {
+                    aktif: '<span class="badge bg-success ms-1">Aktif</span>',
+                    revize_edildi: '<span class="badge bg-warning text-dark ms-1"><i class="fas fa-sync-alt me-1"></i>Revize Edildi</span>',
+                    iptal: '<span class="badge bg-secondary ms-1"><i class="fas fa-ban me-1"></i>İptal</span>'
+                };
+                const durumBadge = durumBadgeMap[durum] || '';
+
+                const revizeLink = instruction.revize_edilen_no
+                    ? `<small class="text-muted d-block mt-1">
+                           <i class="fas fa-link me-1"></i>Yerine Geçtiği: <strong>${instruction.revize_edilen_no}</strong>
+                       </small>`
+                    : '';
+
                 html += `
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card instruction-card h-100">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h6 class="card-title mb-0">${instructionType}</h6>
-                                    <span class="badge bg-primary status-badge">${instruction.instruction_number || 'N/A'}</span>
+                                    <div>
+                                        <span class="badge bg-primary status-badge">${instruction.instruction_number || 'N/A'}</span>
+                                        ${durumBadge}
+                                    </div>
                                 </div>
                                 <div class="card-text mb-3 small">
                                     <div class="d-flex align-items-start mb-1">
@@ -341,14 +370,19 @@
                                         <span class="fw-bold"><i class="fas fa-money-bill-wave me-1"></i> ${amount}</span>
                                     </small>
                                     ${instruction.olusturan_kullanici ? `<small class="text-muted d-block mt-1"><i class="fas fa-user me-1"></i> ${instruction.olusturan_kullanici}</small>` : ''}
+                                    ${revizeLink}
                                 </p>
                                 <div class="d-flex gap-2">
                                     <button class="btn btn-outline-primary btn-sm detail-btn flex-fill" data-id="${instruction.id}">
                                         <i class="fas fa-eye me-1"></i> Detay
                                     </button>
-                                    <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${instruction.id}" data-number="${instruction.instruction_number || 'N/A'}" data-type="${instructionType}">
-                                        <i class="fas fa-trash"></i>
+                                    ${durum === 'aktif' ? `
+                                    <button class="btn btn-outline-warning btn-sm revize-btn" data-id="${instruction.id}" title="Bu talimatı revize et">
+                                        <i class="fas fa-sync-alt me-1"></i> Revize Et
                                     </button>
+                                    <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${instruction.id}" data-number="${instruction.instruction_number || 'N/A'}" data-type="${instructionType}" title="Bu talimatı iptal et">
+                                        <i class="fas fa-ban me-1"></i> İptal Et
+                                    </button>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -359,11 +393,21 @@
 
             instructionsContainer.innerHTML = html;
 
-            // Add event listeners to detail and delete buttons
+            // Add event listeners to detail, revize, and delete buttons
             document.querySelectorAll('.detail-btn').forEach(button => {
                 button.addEventListener('click', function () {
                     const instructionId = this.getAttribute('data-id');
                     showInstructionDetail(instructionId);
+                });
+            });
+
+            document.querySelectorAll('.revize-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const instructionId = this.getAttribute('data-id');
+                    const instruction = allInstructions.find(inst => inst.id == instructionId);
+                    if (!instruction) return;
+                    sessionStorage.setItem('revisionData', JSON.stringify(instruction));
+                    window.location.href = 'index.html?mode=revision';
                 });
             });
 
@@ -385,6 +429,7 @@
                         <thead>
                             <tr>
                                 <th>Talimat No</th>
+                                <th>Durum</th>
                                 <th>Tür</th>
                                 <th>Gönderici</th>
                                 <th>Alıcı</th>
@@ -401,10 +446,23 @@
                 const instructionType = instruction.talimat_turu || 'Belirtilmemiş';
                 const instructionDate = instruction.talimat_tarihi ? formatDate(instruction.talimat_tarihi) : 'Belirtilmemiş';
                 const amount = instruction.tutar ? formatCurrency(instruction.tutar, instruction.para_birimi) : 'Belirtilmemiş';
+                const durum = instruction.durum || 'aktif';
+                const durumBadgeMap = {
+                    aktif: '<span class="badge bg-success">Aktif</span>',
+                    revize_edildi: '<span class="badge bg-warning text-dark"><i class="fas fa-sync-alt me-1"></i>Revize</span>',
+                    iptal: '<span class="badge bg-secondary"><i class="fas fa-ban me-1"></i>İptal</span>'
+                };
+                const durumBadge = durumBadgeMap[durum] || '<span class="badge bg-secondary">-</span>';
+
+                let noDisplay = instruction.instruction_number || 'N/A';
+                if (instruction.revize_edilen_no) {
+                    noDisplay += `<br><small class="text-muted"><i class="fas fa-link me-1"></i>${instruction.revize_edilen_no}</small>`;
+                }
 
                 html += `
                     <tr class="instruction-row">
-                        <td>${instruction.instruction_number || 'N/A'}</td>
+                        <td>${noDisplay}</td>
+                        <td>${durumBadge}</td>
                         <td>${instructionType}</td>
                         <td class="small">${instruction.gonderici_firma?.name || '-'}</td>
                         <td class="small">${instruction.alici_firma?.name || '-'}</td>
@@ -416,9 +474,13 @@
                                 <button class="btn btn-outline-primary btn-sm detail-btn" data-id="${instruction.id}">
                                     <i class="fas fa-eye"></i> Detay
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${instruction.id}" data-number="${instruction.instruction_number || 'N/A'}" data-type="${instructionType}">
-                                    <i class="fas fa-trash"></i> Sil
+                                ${durum === 'aktif' ? `
+                                <button class="btn btn-outline-warning btn-sm revize-btn" data-id="${instruction.id}" title="Bu talimatı revize et">
+                                    <i class="fas fa-sync-alt"></i> Revize
                                 </button>
+                                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${instruction.id}" data-number="${instruction.instruction_number || 'N/A'}" data-type="${instructionType}" title="Bu talimatı iptal et">
+                                    <i class="fas fa-ban"></i> İptal
+                                </button>` : ''}
                             </div>
                         </td>
                     </tr>
@@ -433,11 +495,21 @@
 
             instructionsContainer.innerHTML = html;
 
-            // Add event listeners to detail and delete buttons
+            // Add event listeners to detail, revize, and delete buttons
             document.querySelectorAll('.detail-btn').forEach(button => {
                 button.addEventListener('click', function () {
                     const instructionId = this.getAttribute('data-id');
                     showInstructionDetail(instructionId);
+                });
+            });
+
+            document.querySelectorAll('.revize-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const instructionId = this.getAttribute('data-id');
+                    const instruction = allInstructions.find(inst => inst.id == instructionId);
+                    if (!instruction) return;
+                    sessionStorage.setItem('revisionData', JSON.stringify(instruction));
+                    window.location.href = 'index.html?mode=revision';
                 });
             });
 
@@ -609,13 +681,13 @@
 
             try {
                 // Show loading state
-                confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Siliniyor...';
+                confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> İptal Ediliyor...';
                 confirmDeleteBtn.disabled = true;
 
-                // Delete instruction from Supabase
+                // Soft delete: Update durum to 'iptal' in Supabase
                 const { error } = await supabaseClient
                     .from('payment_instructions')
-                    .delete()
+                    .update({ durum: 'iptal' })
                     .eq('id', instructionToDelete);
 
                 if (error) {
@@ -628,20 +700,20 @@
 
                 // Reset delete state
                 instructionToDelete = null;
-                confirmDeleteBtn.textContent = 'Sil';
+                confirmDeleteBtn.innerHTML = '<i class="fas fa-ban me-1"></i> İptal Et';
                 confirmDeleteBtn.disabled = false;
 
                 // Reload instructions
                 await loadInstructions();
 
                 // Show success message
-                alert('Talimat başarıyla silindi.');
+                alert('Talimat başarıyla iptal edildi.');
             } catch (error) {
-                console.error('Talimat silinirken hata oluştu:', error);
-                alert('Talimat silinirken bir hata oluştu: ' + error.message);
+                console.error('Talimat iptal edilirken hata oluştu:', error);
+                alert('Talimat iptal edilirken bir hata oluştu: ' + error.message);
 
                 // Reset delete state
-                confirmDeleteBtn.textContent = 'Sil';
+                confirmDeleteBtn.innerHTML = '<i class="fas fa-ban me-1"></i> İptal Et';
                 confirmDeleteBtn.disabled = false;
             }
         }
@@ -654,8 +726,16 @@
             const dateFrom = dateFromFilter.value;
             const dateTo = dateToFilter.value;
             const kullaniciFilterVal = kullaniciFilter.value;
+            const durumFilterVal = durumFilter ? durumFilter.value : 'aktif';
 
             filteredInstructions = allInstructions.filter(instruction => {
+                // Durum filter
+                if (durumFilterVal && durumFilterVal !== 'all') {
+                    if ((instruction.durum || 'aktif') !== durumFilterVal) {
+                        return false;
+                    }
+                }
+
                 // Grup (Prefix) filter
                 if (prefixFilter !== 'all') {
                     if (instruction.department_prefix !== prefixFilter) {
@@ -734,16 +814,16 @@
         }
 
         // Clear filters
-        function clearFilters() {
+        async function clearFilters() {
             grupPrefixFilter.value = 'all';
             grupFirmaFilter.value = 'all';
             instructionTypeFilter.value = 'all';
             dateFromFilter.value = '';
             dateToFilter.value = '';
             kullaniciFilter.value = 'all';
+            if (durumFilter) durumFilter.value = 'aktif';
             sortOrder.value = 'instruction_number.desc';
-            filteredInstructions = [...allInstructions];
-            renderInstructions(filteredInstructions);
+            await loadInstructions();
         }
 
         // Populate Firma Filter
@@ -779,7 +859,9 @@
         // Load instructions from Supabase
         async function loadInstructions() {
             try {
-                const { data, error } = await supabaseClient
+                const durumVal = durumFilter?.value || 'aktif';
+
+                let query = supabaseClient
                     .from('payment_instructions')
                     .select(`
                         *,
@@ -789,6 +871,13 @@
                         alici_banka:bank_accounts!payment_instructions_alici_banka_hesap_id_fkey(banka_adi, sube_adi, iban)
                     `)
                     .order('instruction_number', { ascending: false });
+
+                // 'all' seçilirse sunucu filtresi eklenmez
+                if (durumVal !== 'all') {
+                    query = query.eq('durum', durumVal);
+                }
+
+                const { data, error } = await query;
 
                 if (error) {
                     throw new Error(error.message);
@@ -814,6 +903,9 @@
         // Event Listeners
         applyFiltersBtn.addEventListener('click', applyFilters);
         clearFiltersBtn.addEventListener('click', clearFilters);
+        if (durumFilter) {
+            durumFilter.addEventListener('change', () => loadInstructions());
+        }
         cardViewBtn.addEventListener('click', () => toggleView('card'));
         listViewBtn.addEventListener('click', () => toggleView('list'));
         sortOrder.addEventListener('change', applyFilters);

@@ -7,7 +7,7 @@ import { fetchFirmalar, getFirmalar, addFirma, updateFirma, deleteFirma, findFir
 import { addBanka, updateBanka, deleteBanka, addBankaBulk, formatIBAN } from './modules/bankalar.js';
 import { createHavaleEFTInstruction, createCariInstruction, createVergiInstruction as createVergiInstructionModule, createDovizInstruction, formatInstructionNumber, formatCurrency, formatDate, printInstruction, instructionTypes } from './modules/talimatlar.js';
 import { validateIBAN, validateCompanyTypeRequirements, validateHavaleEFTForm, validateCurrencyMatch, validateDovizForm } from './modules/validasyon.js';
-import { initializeUI, renderFirmaAccordion, showNotification, showFirmaModal, showBankaModal, hideModals, refreshUI, getCurrentInstructionType } from './modules/ui-etkilesimleri.js';
+import { initializeUI, renderFirmaAccordion, showNotification, showFirmaModal, showBankaModal, hideModals, refreshUI, getCurrentInstructionType, checkRevisionMode } from './modules/ui-etkilesimleri.js';
 import { talimatOperations, supabaseClient } from './modules/supabase-entegrasyonu.js';
 
 /**
@@ -267,6 +267,9 @@ const startAppWithSession = async (session) => {
         console.log('Loading initial data...');
         await loadInitialData();
         await loadUserDepartments();
+        if (typeof checkRevisionMode === 'function') {
+            await checkRevisionMode();
+        }
     } catch (error) {
         console.error('App initialization error:', error);
     } finally {
@@ -853,6 +856,19 @@ const handleTalimatOlustur = async (event) => {
     const btn = document.getElementById('talimatOlusturBtn');
     const originalText = btn ? btn.innerHTML : '';
     
+    // --- Revizyon durumu kontrol ---
+    const revisionDataRaw = sessionStorage.getItem('revisionData');
+    const isRevisionMode = revisionDataRaw !== null;
+    let revisionSource = null;
+    if (isRevisionMode) {
+        try {
+            revisionSource = JSON.parse(revisionDataRaw);
+        } catch (e) {
+            console.error('[Revizyon] Parse hatası:', e);
+            sessionStorage.removeItem('revisionData');
+        }
+    }
+    
     try {
         isSubmittingTalimat = true;
         if (btn) {
@@ -861,21 +877,45 @@ const handleTalimatOlustur = async (event) => {
         }
         
         const { type } = event.detail;
+        let createdResult;
         
         if (type.startsWith('havale')) {
-            await createHavaleInstructionFromForm();
+            createdResult = await createHavaleInstructionFromForm(revisionSource);
         } else if (type.startsWith('vergi')) {
-            await createVergiInstructionFromForm();
+            createdResult = await createVergiInstructionFromForm(revisionSource);
         } else if (type.startsWith('sgk')) {
-            await createSGKInstructionFromForm();
+            createdResult = await createSGKInstructionFromForm(revisionSource);
         } else if (type.startsWith('gumruk')) {
-            await createGumrukInstructionFromForm();
+            createdResult = await createGumrukInstructionFromForm(revisionSource);
         } else if (type.startsWith('cari')) {
-            await createCariInstructionFromForm();
+            createdResult = await createCariInstructionFromForm(revisionSource);
         } else if (type.startsWith('doviz')) {
-            await createDovizInstructionFromForm();
+            createdResult = await createDovizInstructionFromForm(revisionSource);
         } else {
             throw new Error('Desteklenmeyen talimat türü');
+        }
+
+        // --- İki aşamalı atomik kayıt: Eğer revizyon modundaysa eski talimatı 'revize_edildi' yap ---
+        if (isRevisionMode && revisionSource && createdResult) {
+            const { error: updateError } = await supabaseClient
+                .from('payment_instructions')
+                .update({ durum: 'revize_edildi' })
+                .eq('id', revisionSource.id);
+
+            if (updateError) {
+                console.error('[Revizyon] Eski talimat kapatılamadı:', updateError.message);
+                showNotification(
+                    `⚠️ Eski talimat (${revisionSource.instruction_number}) otomatik kapatılamadı: ${updateError.message}`,
+                    'warning'
+                );
+            } else {
+                console.log(`[Revizyon] Eski talimat (${revisionSource.instruction_number}) 'revize_edildi' olarak güncellendi.`);
+            }
+
+            // --- State temizle ---
+            sessionStorage.removeItem('revisionData');
+            document.getElementById('revisionBanner')?.classList.add('d-none');
+            window.history.replaceState({}, '', 'index.html');
         }
         
     } catch (error) {
@@ -893,8 +933,9 @@ const handleTalimatOlustur = async (event) => {
 /**
  * Create FX instruction from form data
  */
-const createDovizInstructionFromForm = async () => {
+const createDovizInstructionFromForm = async (revisionSource = null) => {
     const talimatTarihi = document.getElementById('talimatTarihi')?.value;
+    const departmentPrefixInput = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[name="department_prefix"]');
     const formData = {
         gondericiFirma: document.getElementById('gondericiFirma')?.value,
         gondericiBanka: document.getElementById('gondericiBanka')?.value,
@@ -907,7 +948,10 @@ const createDovizInstructionFromForm = async () => {
         tutar: document.getElementById('tutar')?.value,
         talimatTarihi: talimatTarihi,
         valorTarihi: document.getElementById('valorTarihi')?.value || talimatTarihi,
-        aciklama: document.getElementById('aciklama')?.value
+        aciklama: document.getElementById('aciklama')?.value,
+        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null,
+        durum: 'aktif',
+        revize_edilen_no: revisionSource ? revisionSource.instruction_number : null
     };
     
     const gondericiFirmaObj = findFirmaById(formData.gondericiFirma);
@@ -921,12 +965,15 @@ const createDovizInstructionFromForm = async () => {
     
     if (!companyTypeValidation.isValid) {
         showNotification(companyTypeValidation.message, 'error');
-        return;
+        return null;
     }
     
     const result = await createDovizInstruction(formData);
     
-    showNotification('Döviz işlemi talimatı başarıyla oluşturuldu ve kaydedildi!');
+    const successMsg = revisionSource
+        ? `✅ Revizyon tamamlandı! Yeni Talimat No: ${result.instruction.instruction_number}`
+        : 'Döviz işlemi talimatı başarıyla oluşturuldu ve kaydedildi!';
+    showNotification(successMsg, 'success');
     
     generateDovizTalimatCikti(
         result.gondericiFirma,
@@ -936,6 +983,8 @@ const createDovizInstructionFromForm = async () => {
         formData,
         result.instruction.instruction_number
     );
+
+    return result;
 };
 
 /**
@@ -1065,7 +1114,7 @@ const generateDovizTalimatCikti = (gondericiFirma, gondericiBanka, aliciFirma, a
 /**
  * Create havale instruction from form data
  */
-const createHavaleInstructionFromForm = async () => {
+const createHavaleInstructionFromForm = async (revisionSource = null) => {
     // DEBUG: Check form values for SWIFT debugging
     console.log('=== FORM VALUES DEBUG ===');
     console.log('Gönderici Firma ID:', document.getElementById('gondericiFirma')?.value);
@@ -1084,7 +1133,9 @@ const createHavaleInstructionFromForm = async () => {
         tutar: document.getElementById('tutar')?.value,
         aciklama: document.getElementById('aciklama')?.value,
         talimatTarihi: document.getElementById('talimatTarihi')?.value,
-        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null,
+        durum: 'aktif',
+        revize_edilen_no: revisionSource ? revisionSource.instruction_number : null
     };
     
     // Get company objects for validation
@@ -1105,12 +1156,15 @@ const createHavaleInstructionFromForm = async () => {
     
     if (!companyTypeValidation.isValid) {
         showNotification(companyTypeValidation.message, 'error');
-        return;
+        return null;
     }
     
     const result = await createHavaleEFTInstruction(formData);
     
-    showNotification('Talimat başarıyla oluşturuldu ve kaydedildi!');
+    const successMsg = revisionSource
+        ? `✅ Revizyon tamamlandı! Yeni Talimat No: ${result.instruction.instruction_number}`
+        : 'Talimat başarıyla oluşturuldu ve kaydedildi!';
+    showNotification(successMsg, 'success');
     
     // Generate and display instruction output
     generateHavaleEFTTalimatCikti(
@@ -1123,12 +1177,14 @@ const createHavaleInstructionFromForm = async () => {
         result.instruction.instruction_number,
         formData.talimatTarihi
     );
+
+    return result;
 };
 
 /**
  * Create vergi instruction from form data
  */
-const createVergiInstructionFromForm = async () => {
+const createVergiInstructionFromForm = async (revisionSource = null) => {
     const departmentPrefixInput = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[name="department_prefix"]');
 
     const formData = {
@@ -1139,7 +1195,9 @@ const createVergiInstructionFromForm = async () => {
         talimatTarihi: document.getElementById('vergiTalimatTarihi')?.value,
         tahakkukNo: document.getElementById('tahakkukNo')?.value,
         vergiDonem: document.getElementById('vergiDonem')?.value,
-        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null,
+        durum: 'aktif',
+        revize_edilen_no: revisionSource ? revisionSource.instruction_number : null
     };
     
     // Get company objects for validation
@@ -1154,12 +1212,15 @@ const createVergiInstructionFromForm = async () => {
     
     if (!companyTypeValidation.isValid) {
         showNotification(companyTypeValidation.message, 'error');
-        return;
+        return null;
     }
     
     const result = await createVergiInstructionModule(formData);
     
-    showNotification('Vergi talimatı başarıyla oluşturuldu ve kaydedildi!');
+    const successMsg = revisionSource
+        ? `✅ Revizyon tamamlandı! Yeni Talimat No: ${result.instruction.instruction_number}`
+        : 'Vergi talimatı başarıyla oluşturuldu ve kaydedildi!';
+    showNotification(successMsg, 'success');
     
     // Generate and display instruction output
     generateVergiTalimatCikti(
@@ -1172,12 +1233,14 @@ const createVergiInstructionFromForm = async () => {
         formData.vergiDonem,
         formData.talimatTarihi
     );
+
+    return result;
 };
 
 /**
  * Create SGK instruction from form data
  */
-const createSGKInstructionFromForm = async () => {
+const createSGKInstructionFromForm = async (revisionSource = null) => {
     const departmentPrefixInput = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[name="department_prefix"]');
     
     const formData = {
@@ -1188,7 +1251,9 @@ const createSGKInstructionFromForm = async () => {
         talimatTarihi: document.getElementById('sgkTalimatTarihi')?.value,
         tahakkukNo: document.getElementById('sgkSicilNo')?.value,
         sgkDonem: document.getElementById('sgkDonem')?.value,
-        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null,
+        durum: 'aktif',
+        revize_edilen_no: revisionSource ? revisionSource.instruction_number : null
     };
     
     // Get company objects for validation
@@ -1203,13 +1268,16 @@ const createSGKInstructionFromForm = async () => {
     
     if (!companyTypeValidation.isValid) {
         showNotification(companyTypeValidation.message, 'error');
-        return;
+        return null;
     }
     
     // For now, we'll use the same function as vergi since the data structure is similar
     const result = await createVergiInstructionModule(formData);
     
-    showNotification('SGK talimatı başarıyla oluşturuldu ve kaydedildi!');
+    const successMsg = revisionSource
+        ? `✅ Revizyon tamamlandı! Yeni Talimat No: ${result.instruction.instruction_number}`
+        : 'SGK talimatı başarıyla oluşturuldu ve kaydedildi!';
+    showNotification(successMsg, 'success');
     
     // Generate and display instruction output
     generateVergiTalimatCikti(
@@ -1222,12 +1290,14 @@ const createSGKInstructionFromForm = async () => {
         formData.sgkDonem,
         formData.talimatTarihi
     );
+
+    return result;
 };
 
 /**
  * Create Gümrük instruction from form data
  */
-const createGumrukInstructionFromForm = async () => {
+const createGumrukInstructionFromForm = async (revisionSource = null) => {
     const departmentPrefixInput = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[name="department_prefix"]');
 
     const formData = {
@@ -1240,7 +1310,9 @@ const createGumrukInstructionFromForm = async () => {
         gtipKodu: document.getElementById('gtipKodu')?.value,
         otvOrani: document.getElementById('otvOrani')?.value,
         harcTuru: document.getElementById('harcTuru')?.value,
-        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+        department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null,
+        durum: 'aktif',
+        revize_edilen_no: revisionSource ? revisionSource.instruction_number : null
     };
     
     // Get company objects for validation
@@ -1255,13 +1327,16 @@ const createGumrukInstructionFromForm = async () => {
     
     if (!companyTypeValidation.isValid) {
         showNotification(companyTypeValidation.message, 'error');
-        return;
+        return null;
     }
     
     // For now, we'll use the same function as vergi since the data structure is similar
     const result = await createVergiInstructionModule(formData);
     
-    showNotification('Gümrük talimatı başarıyla oluşturuldu ve kaydedildi!');
+    const successMsg = revisionSource
+        ? `✅ Revizyon tamamlandı! Yeni Talimat No: ${result.instruction.instruction_number}`
+        : 'Gümrük talimatı başarıyla oluşturuldu ve kaydedildi!';
+    showNotification(successMsg, 'success');
     
     // Generate and display instruction output
     generateVergiTalimatCikti(
@@ -1274,6 +1349,8 @@ const createGumrukInstructionFromForm = async () => {
         formData.gtipKodu || formData.otvOrani || formData.harcTuru || '',
         formData.talimatTarihi
     );
+
+    return result;
 };
 
 /**
@@ -1519,7 +1596,9 @@ const createCariInstructionFromForm = async () => {
             aciklama: payment.aciklama,
             talimat_tarihi: talimatTarihi,
             talimat_turu: 'Cari Hesap Ödemesi',
-            department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null
+            department_prefix: departmentPrefixInput ? departmentPrefixInput.value : null,
+            durum: 'aktif',
+            revize_edilen_no: revisionSource ? revisionSource.instruction_number : null
         };
         
         console.log('Creating instruction with data:', instructionData);
@@ -1534,11 +1613,14 @@ const createCariInstructionFromForm = async () => {
             console.log('Created instruction:', data);
         } catch (error) {
             showNotification(`Ödeme oluşturulurken hata: ${error.message}`, 'error');
-            return;
+            return null;
         }
     }
     
-    showNotification(`${payments.length} adet talimat başarıyla oluşturuldu ve kaydedildi!`);
+    const successMsg = revisionSource
+        ? `✅ Revizyon tamamlandı! ${payments.length} adet talimat oluşturuldu.`
+        : `${payments.length} adet talimat başarıyla oluşturuldu ve kaydedildi!`;
+    showNotification(successMsg, 'success');
     
     // Debug: Log the results
     console.log('Created instructions:', results);
@@ -1562,6 +1644,8 @@ const createCariInstructionFromForm = async () => {
         baseInstructionNumber,
         talimatTarihi
     );
+
+    return results;
 };
 
 /**

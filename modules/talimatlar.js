@@ -199,16 +199,18 @@ export const createHavaleEFTInstruction = async (formData) => {
             throw new Error(currencyCheck.message);
         }
         
-        // Check for duplicates
-        const isDuplicate = await talimatOperations.checkDuplicateHavale(
-            gondericiFirma.id,
-            aliciFirma.id,
-            formData.tutar,
-            formData.aciklama || ''
-        );
-        
-        if (isDuplicate) {
-            throw new Error('Bu talimat daha önce oluşturulmuş. Mükerrer kayıt yapılamaz.');
+        // Check for duplicates (skip if revision)
+        if (!formData.revize_edilen_no) {
+            const isDuplicate = await talimatOperations.checkDuplicateHavale(
+                gondericiFirma.id,
+                aliciFirma.id,
+                formData.tutar,
+                formData.aciklama || ''
+            );
+            
+            if (isDuplicate) {
+                throw new Error('Bu talimat daha önce oluşturulmuş. Mükerrer kayıt yapılamaz.');
+            }
         }
         
         // Removed getNextInstructionNumber as the DB handles it
@@ -224,7 +226,9 @@ export const createHavaleEFTInstruction = async (formData) => {
             aciklama: formData.aciklama || '',
             talimat_tarihi: formData.talimatTarihi,
             talimat_turu: 'Havale/EFT',
-            department_prefix: formData.department_prefix || null
+            department_prefix: formData.department_prefix || null,
+            durum: formData.durum || 'aktif',
+            revize_edilen_no: formData.revize_edilen_no || null
         };
         
         // Create instruction
@@ -280,16 +284,18 @@ export const createCariInstruction = async (formData) => {
             throw new Error(currencyCheck.message);
         }
         
-        // Check for duplicates
-        const isDuplicate = await talimatOperations.checkDuplicateCari(
-            gondericiFirma.id,
-            aliciFirma.id,
-            formData.tutar,
-            formData.aciklama || ''
-        );
-        
-        if (isDuplicate) {
-            throw new Error('Bu talimat daha önce oluşturulmuş. Mükerrer kayıt yapılamaz.');
+        // Check for duplicates (skip if revision)
+        if (!formData.revize_edilen_no) {
+            const isDuplicate = await talimatOperations.checkDuplicateCari(
+                gondericiFirma.id,
+                aliciFirma.id,
+                formData.tutar,
+                formData.aciklama || ''
+            );
+            
+            if (isDuplicate) {
+                throw new Error('Bu talimat daha önce oluşturulmuş. Mükerrer kayıt yapılamaz.');
+            }
         }
         
         // Removed getNextInstructionNumber as the DB handles it
@@ -305,7 +311,9 @@ export const createCariInstruction = async (formData) => {
             aciklama: formData.aciklama || '',
             talimat_tarihi: formData.talimatTarihi,
             talimat_turu: 'Cari Hesap Ödemesi',
-            department_prefix: formData.department_prefix || null
+            department_prefix: formData.department_prefix || null,
+            durum: formData.durum || 'aktif',
+            revize_edilen_no: formData.revize_edilen_no || null
         };
         
         // Create instruction
@@ -362,18 +370,20 @@ export const createVergiInstruction = async (formData) => {
             }
         }
         
-        // Check for duplicates
-        const isDuplicate = await talimatOperations.checkDuplicateVergi(
-            gondericiFirma.id,
-            formData.tutar,
-            formData.aciklama || '',
-            getCurrentInstructionType(), // Use current instruction type instead of formData.vergiTuru
-            gondericiFirma.vergi_dairesi || '',
-            gondericiFirma.vkn_tc_no || ''
-        );
-        
-        if (isDuplicate) {
-            throw new Error('Bu vergi talimatı daha önce oluşturulmuş. Mükerrer kayıt yapılamaz.');
+        // Check for duplicates (skip if revision)
+        if (!formData.revize_edilen_no) {
+            const isDuplicate = await talimatOperations.checkDuplicateVergi(
+                gondericiFirma.id,
+                formData.tutar,
+                formData.aciklama || '',
+                getCurrentInstructionType(), // Use current instruction type instead of formData.vergiTuru
+                gondericiFirma.vergi_dairesi || '',
+                gondericiFirma.vkn_tc_no || ''
+            );
+            
+            if (isDuplicate) {
+                throw new Error('Bu vergi talimatı daha önce oluşturulmuş. Mükerrer kayıt yapılamaz.');
+            }
         }
         
         // Prepare instruction data
@@ -388,6 +398,8 @@ export const createVergiInstruction = async (formData) => {
             talimat_tarihi: formData.talimatTarihi,
             talimat_turu: 'Vergi Ödemesi',
             department_prefix: formData.department_prefix || null,
+            durum: formData.durum || 'aktif',
+            revize_edilen_no: formData.revize_edilen_no || null,
             vergi_turu: getCurrentInstructionType(), // Use current instruction type
             vergi_dairesi: gondericiFirma.vergi_dairesi || '',
             vergi_kimlik_no: gondericiFirma.vkn_tc_no || '',
@@ -643,16 +655,18 @@ export const createDovizInstruction = async (formData) => {
         const dbTutar = isAlim ? parseFloat(formData.tutar) : parseFloat(formData.dovizMiktari);
         const dbParaBirimi = gondericiBanka.para_birimi;
 
-        // 3. Mükerrer Kontrolü
-        const isDuplicate = await talimatOperations.checkDuplicateDoviz(
-            gondericiBanka.id, 
-            formData.dovizIslemiTuru.toLowerCase(), 
-            dbTutar,
-            formData.talimatTarihi
-        );
-        
-        if (isDuplicate) {
-            throw new Error('Bu hesap, tarih ve tutar için aynı yönde (alım/satım) zaten bir talimat mevcut. Lütfen kontrol ediniz.');
+        // 3. Mükerrer Kontrolü (skip if revision)
+        if (!formData.revize_edilen_no) {
+            const isDuplicate = await talimatOperations.checkDuplicateDoviz(
+                gondericiBanka.id, 
+                formData.dovizIslemiTuru.toLowerCase(), 
+                dbTutar,
+                formData.talimatTarihi
+            );
+            
+            if (isDuplicate) {
+                throw new Error('Bu hesap, tarih ve tutar için aynı yönde (alım/satım) zaten bir talimat mevcut. Lütfen kontrol ediniz.');
+            }
         }
 
         // 4. DB Data Hazırlığı
@@ -667,6 +681,8 @@ export const createDovizInstruction = async (formData) => {
             talimat_tarihi: formData.talimatTarihi,
             talimat_turu: 'Döviz Alım/Satım',
             department_prefix: formData.department_prefix || null,
+            durum: formData.durum || 'aktif',
+            revize_edilen_no: formData.revize_edilen_no || null,
             doviz_islemi_turu: formData.dovizIslemiTuru.toLowerCase(), 
             doviz_cinsi: formData.dovizCinsi,
             doviz_miktari: parseFloat(formData.dovizMiktari),
