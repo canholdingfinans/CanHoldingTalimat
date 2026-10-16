@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Kılavuzu — Can Holding Finansal Talimat Sistemi</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --primary-dark: #0a58ca;
+            --secondary-bg: #f8fafc;
+            --sidebar-width: 290px;
+            --accent-color: #0dcaf0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main);
+            background-color: #f1f5f9;
+            scroll-behavior: smooth;
+        }
+
+        /* Top Navbar */
+        .manual-navbar {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        .manual-brand {
+            font-weight: 700;
+            color: #ffffff !important;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .manual-brand .badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: #0ea5e9;
+        }
+
+        /* Layout */
+        .manual-container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* Sticky Sidebar */
+        .manual-sidebar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 90px);
+            overflow-y: auto;
+            padding: 1.25rem 0.75rem;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .manual-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .manual-sidebar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            padding: 0 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 0.75rem;
+        }
+
+        .nav-manual-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.55rem 0.75rem;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.15s ease-in-out;
+            margin-bottom: 3px;
+        }
+
+        .nav-manual-link i {
+            width: 18px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            transition: color 0.15s;
+        }
+
+        .nav-manual-link:hover {
+            background-color: #eff6ff;
+            color: var(--primary-color);
+        }
+
+        .nav-manual-link:hover i {
+            color: var(--primary-color);
+        }
+
+        .nav-manual-link.active {
+            background-color: #dbeafe;
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .nav-manual-link.active i {
+            color: var(--primary-color);
+        }
+
+        /* Content Area */
+        .manual-content {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 2.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            margin-bottom: 3rem;
+        }
+
+        .section-anchor {
+            scroll-margin-top: 90px;
+        }
+
+        .manual-section {
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2.5rem;
+        }
+
+        .manual-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            background: #e0f2fe;
+            color: #0369a1;
+            margin-bottom: 0.5rem;
+        }
+
+        h2.section-heading {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            margin-bottom: 1rem;
+        }
+
+        h3.subsection-heading {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p, li {
+            line-height: 1.65;
+            color: #334155;
+        }
+
+        /* Callouts */
+        .callout {
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+            border-left: 4px solid;
+            font-size: 0.925rem;
+        }
+
+        .callout-info {
+            background-color: #f0fdf4;
+            border-color: #22c55e;
+            color: #14532d;
+        }
+
+        .callout-warning {
+            background-color: #fefce8;
+            border-color: #eab308;
+            color: #713f12;
+        }
+
+        .callout-danger {
+            background-color: #fef2f2;
+            border-color: #ef4444;
+            color: #7f1d1d;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0.4rem;
+        }
+
+        /* Quick Map Table */
+        .quick-map-table {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .quick-map-table thead {
+            background-color: #0f172a;
+            color: white;
+        }
+
+        .quick-map-table th {
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.85rem 1rem;
+        }
+
+        .quick-map-table td {
+            vertical-align: middle;
+            font-size: 0.9rem;
+            padding: 0.85rem 1rem;
+        }
+
+        .badge-path {
+            background: #f1f5f9;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            font-family: monospace;
+            font-size: 0.85rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        /* Step Card */
+        .step-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-right: 8px;
+        }
+
+        /* Print styles */
+        @media print {
+            .manual-navbar, .manual-sidebar, .no-print {
+                display: none !important;
+            }
+            .manual-content {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            body {
+                background: white !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg manual-navbar py-2 px-3">
+        <div class="container-fluid manual-container">
+            <a class="navbar-brand manual-brand" href="index.html">
+                <i class="fas fa-file-invoice-dollar text-info fs-4"></i>
+                <span>Can Holding Talimat Sistemi</span>
+                <span class="badge">Kullanıcı Kılavuzu</span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-2 ms-auto no-print">
+                <a href="index.html" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-home me-1"></i> Ana Sayfa
+                </a>
+                <a href="arsiv.html" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-archive me-1"></i> Talimat Arşivi
+                </a>
+                <button type="button" class="btn btn-info btn-sm text-white fw-bold" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i> Kılavuzu Yazdır / PDF
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid manual-container my-4">
+        <div class="row g-4">
+            
+            <!-- Sticky Left Sidebar Navigation -->
+            <div class="col-lg-3 d-none d-lg-block">
+                <div class="manual-sidebar">
+                    <div class="sidebar-title">Kılavuz Menüsü</div>
+                    
+                    <a href="#hizli-baslangic" class="nav-manual-link active">
+                        <i class="fas fa-compass text-primary"></i> Hızlı Başlangıç Haritası
+                    </a>
+                    <a href="#bolum-1" class="nav-manual-link">
+                        <i class="fas fa-sign-in-alt text-secondary"></i> 1. Giriş ve Departman
+                    </a>
+                    <a href="#bolum-2" class="nav-manual-link">
+                        <i class="fas fa-building text-success"></i> 2. Firma ve Banka Yönetimi
+                    </a>
+                    <a href="#bolum-3" class="nav-manual-link">
+                        <i class="fas fa-file-signature text-warning"></i> 3. Talimat Oluşturma
+                    </a>
+                    <a href="#bolum-4" class="nav-manual-link">
+                        <i class="fas fa-print text-danger"></i> 4. Çıktı ve İmza Süreci
+                    </a>
+                    <a href="#bolum-5" class="nav-manual-link">
+                        <i class="fas fa-archive text-info"></i> 5. Talimat Arşivi
+                    </a>
+                    <a href="#bolum-6" class="nav-manual-link">
+                        <i class="fas fa-sync-alt text-primary"></i> 6. Akıllı Revizyon
+                    </a>
+                    <a href="#bolum-7" class="nav-manual-link">
+                        <i class="fas fa-ban text-danger"></i> 7. Talimat İptali (Soft Delete)
+                    </a>
+                    <a href="#bolum-8" class="nav-manual-link">
+                        <i class="fas fa-question-circle text-success"></i> 8. Sıkça Sorulan Sorular
+                    </a>
+                    <a href="#bolum-9" class="nav-manual-link">
+                        <i class="fas fa-headset text-secondary"></i> 9. Destek ve Yetki
+                    </a>
+
+                    <div class="p-3 mt-4 bg-light rounded text-center small text-muted border">
+                        <i class="fas fa-shield-alt text-primary mb-1 d-block fs-5"></i>
+                        <strong>Can Holding Finans</strong><br>
+                        Sürüm 2.0 Kurumsal Rehber
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="col-lg-9 col-12">
+                <div class="manual-content">
+
+                    <!-- HIZLI BAŞLANGIÇ / İŞLEM YÖNLENDİRME HARİTASI -->
+                    <section id="hizli-baslangic" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-compass me-1"></i> Doğrudan Yol Tarifi</span>
+                        <h2 class="section-heading">🧭 Hızlı Başlangıç: İşlem Yönlendirme Haritası</h2>
+                        <p class="text-muted">Yapmak istediğiniz finansal veya muhasebe işlemine göre doğrudan izlemeniz gereken menü adımları aşağıda özetlenmiştir:</p>
+
+                        <div class="table-responsive quick-map-table mt-3">
+                            <table class="table table-hover table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 32%;">Yapmak İstediğiniz İşlem</th>
+                                        <th style="width: 43%;">İzlenecek Menü Yolu</th>
+                                        <th style="width: 25%;">Açıklama</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Grup Şirketler İçi Transfer (Virman)</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Havale/EFT > İç Transfer</span></td>
+                                        <td>Holding öz grup şirketleri arası aktarım.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Dış Transfer (Tedarikçi / 3. Şahıs)</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Havale/EFT > Dış Transfer</span></td>
+                                        <td>Piyasa firmalarına tekil transferler.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Satıcı Cari Hesap Ödemesi</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Cari Hesap > Satıcı Ödemesi</span></td>
+                                        <td>Çoklu satıcı fatura ödeme listesi.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Müşteri Cari İade / Ödeme</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Cari Hesap > Müşteri Ödemesi</span></td>
+                                        <td>Müşteri iade ve mahsup işlemleri.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>KDV-1 / KDV-2 Tevkifat Ödemesi</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Vergi > KDV-1 / KDV-2</span></td>
+                                        <td>Aylık KDV ve tevkifat beyannameleri.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Muhtasar Vergi Ödemesi</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Vergi > Muhtasar Hizmet / Ücret</span></td>
+                                        <td>Kira, serbest meslek ve personel stopajı.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Kurumlar Geçici / Damga / GEKAP</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Vergi > Kurum Geçici / Damga</span></td>
+                                        <td>Dönemsel geçici vergi ve resimler.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>SGK Prim Ödemesi</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > SGK Ödemeleri > SGK Primi</span></td>
+                                        <td>Personel aylık SGK prim ödemeleri.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Gümrük Vergisi & İthalat Harcı</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Gümrük > Vergi / ÖTV / Harç</span></td>
+                                        <td>İthalat beyannamesine bağlı ödemeler.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Döviz Alım İşlemi (TL -> Döviz)</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Döviz İşlemleri > Döviz Alım</span></td>
+                                        <td>TL hesabından döviz alma talimatı.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Döviz Satım İşlemi (Döviz -> TL)</strong></td>
+                                        <td><span class="badge-path">Talimat Türü > Döviz İşlemleri > Döviz Satım</span></td>
+                                        <td>Döviz bozdurup TL hesabına aktarma.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Hatalı Talimatı Düzeltme (Revizyon)</strong></td>
+                                        <td><span class="badge-path">Talimat Arşivi > Kart Seç > Revize Et</span></td>
+                                        <td>Formu eski verilerle otomatik doldurur.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Talimatı İptal Etme (Soft Delete)</strong></td>
+                                        <td><span class="badge-path">Talimat Arşivi > Kart Seç > İptal Et</span></td>
+                                        <td>Denetim izini koruyarak iptal eder.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Excel ile Toplu Firma Yükleme</strong></td>
+                                        <td><span class="badge-path">Sol Panel > Toplu Firma Yükle (Excel)</span></td>
+                                        <td>Yüzlerce cari kartı saniyeler içinde aktarır.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- BÖLÜM 1: GİRİŞ VE DEPARTMAN YÖNETİMİ -->
+                    <section id="bolum-1" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-lock me-1"></i> Kimlik & Yetki</span>
+                        <h2 class="section-heading">1. Sisteme Giriş ve Departman Yönetimi</h2>
+                        
+                        <h3 class="subsection-heading"><i class="fas fa-key text-primary"></i> 1.1. Sisteme Erişim ve Oturum Açma</h3>
+                        <p>Sisteme erişmek için internet tarayıcınızdan <code>https://can-holding-talimat.web.app</code> adresini ziyaret ediniz. Kurumsal e-posta kullanıcı adınızı (Örn: <code>ahmet.yilmaz</code>) ve şifrenizi girerek <strong>Giriş Yap</strong> butonuna tıklayınız.</p>
+
+                        <div class="callout callout-info">
+                            <div class="callout-title"><i class="fas fa-info-circle"></i> Otomatik Yetki Tarama</div>
+                            Giriş yaptığınızda sistem, veritabanından kullanıcı hesabınıza tanımlı yetkili departmanları anında yükler ve arayüzü sizin yetki alanınıza göre kilitler veya açar.
+                        </div>
+
+                        <h3 class="subsection-heading"><i class="fas fa-layer-group text-primary"></i> 1.2. Yetkili Departman Yapısı (ENJ ve TCT)</h3>
+                        <p>Can Holding bünyesinde talimat işlemleri iki ana bölüm altında yürütülmektedir:</p>
+                        <ul>
+                            <li><strong>ENJ (Enerji Grubu):</strong> Can Enerji Grubu ve bağlı enerji şirketleri.</li>
+                            <li><strong>TCT (Tectone Grubu):</strong> Tectone Grubu ve bağlı teknoloji/imalat şirketleri.</li>
+                        </ul>
+
+                        <div class="callout callout-danger">
+                            <div class="callout-title"><i class="fas fa-shield-alt"></i> KATI İZOLASYON KURALI (GÖNDERİCİ FİRMA KISITLAMASI)</div>
+                            Formda <strong>ENJ</strong> radyo butonu seçildiğinde, Gönderici Firma listesinde <strong>kesinlikle yalnızca ENJ şirketleri</strong> listelenir. TCT firmaları bu listede görünemez. Benzer şekilde <strong>TCT</strong> seçildiğinde yalnızca TCT firmaları görünür. Başka bir bölümün şirketinden para çıkışı yapılması sistem tarafından tamamen engellenmiştir.
+                        </div>
+                    </section>
+
+                    <!-- BÖLÜM 2: FİRMA VE BANKA HESABI YÖNETİMİ -->
+                    <section id="bolum-2" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-sitemap me-1"></i> Sol Kenar Çubuğu</span>
+                        <h2 class="section-heading">2. Firma ve Banka Hesabı Yönetimi</h2>
+                        <p>Ekranın sol panelinde kayıtlı tüm şirketler, tedarikçiler, müşteriler ve bu firmalara ait banka hesapları hiyerarşik akordiyon yapısında listelenir.</p>
+
+                        <div class="step-box">
+                            <span class="step-number">1</span> <strong>Arama ve Hızlı Filtreleme:</strong>
+                            <p class="mb-0 mt-1 text-muted">Arama kutusuna firma adı veya VKN yazarak anında sonuç alabilir, açılır filtreden <code>Grup</code>, <code>Satıcı</code> veya <code>Müşteri</code> kartlarını tek tıkla listeleyebilirsiniz.</p>
+                        </div>
+
+                        <div class="step-box">
+                            <span class="step-number">2</span> <strong>Yeni Firma Ekleme:</strong>
+                            <p class="mb-0 mt-1 text-muted">Sol üstteki <strong>"+ Yeni Firma Ekle"</strong> butonuna basınız. Firma Adı, Türü (Grup, Satıcı, Müşteri), Bölümü (ENJ, TCT, ORTAK) ve varsa Vergi/SGK bilgilerini doldurup kaydediniz.</p>
+                        </div>
+
+                        <div class="step-box">
+                            <span class="step-number">3</span> <strong>Banka Hesabı Tanımlama (IBAN / SWIFT):</strong>
+                            <p class="mb-0 mt-1 text-muted">Firmanın sağındaki <strong>"+ Banka Ekle"</strong> butonuna tıklayınız. Banka adı, şube, para birimi (TRY, USD, EUR, GBP, CHF) ve 26 haneli IBAN'ı giriniz. Dış transferler için 8-11 haneli SWIFT kodu opsiyonel olarak girilebilir.</p>
+                        </div>
+
+                        <div class="step-box">
+                            <span class="step-number">4</span> <strong>Excel ile Toplu Firma Yükleme:</strong>
+                            <p class="mb-0 mt-1 text-muted">Sol panelin altındaki <strong>"Şablon İndir"</strong> butonuyla örnek tabloyu alınız. Firma adı ve türünü doldurarak <strong>"Dosya Seç"</strong> ile sisteme aktarınız. Yüzlerce firma saniyeler içinde hatasız yüklenir.</p>
+                        </div>
+                    </section>
+
+                    <!-- BÖLÜM 3: TALİMAT OLUŞTURMA İŞLEMLERİ -->
+                    <section id="bolum-3" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-edit me-1"></i> Form İşlemleri</span>
+                        <h2 class="section-heading">3. Talimat Oluşturma İşlemleri (Merkezi Form)</h2>
+                        <p>Talimat ekranında üst menüden seçilen işlem türüne göre form dinamik olarak şekillenir:</p>
+
+                        <div class="row g-3 my-2">
+                            <div class="col-md-6">
+                                <div class="card h-100 p-3 border-light bg-light shadow-sm">
+                                    <h5 class="fw-bold text-primary"><i class="fas fa-university me-2"></i> Havale / EFT İşlemleri</h5>
+                                    <p class="small text-muted mb-0"><strong>İç Transfer:</strong> Holding grup şirketleri arası virman.<br><strong>Dış Transfer:</strong> Üçüncü şahıs ve tedarikçi EFT işlemleri. Alıcı ve gönderici para birimleri aynı olmalıdır.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 p-3 border-light bg-light shadow-sm">
+                                    <h5 class="fw-bold text-success"><i class="fas fa-receipt me-2"></i> Vergi Ödemeleri</h5>
+                                    <p class="small text-muted mb-0">KDV-1, KDV-2 Tevkifat, Muhtasar Hizmet/Ücret, Kurumlar Geçici, Damga ve GEKAP. Tahakkuk fiş numarası ve vergilendirme dönemi zorunludur.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 p-3 border-light bg-light shadow-sm">
+                                    <h5 class="fw-bold text-info"><i class="fas fa-user-shield me-2"></i> SGK Ödemeleri</h5>
+                                    <p class="small text-muted mb-0">SGK Prim ödemeleri için firma SGK sicil numarası otomatik çekilir, prim dönemi seçilerek bankaya talimat yazılır.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 p-3 border-light bg-light shadow-sm">
+                                    <h5 class="fw-bold text-warning"><i class="fas fa-truck me-2"></i> Gümrük ve Harçlar</h5>
+                                    <p class="small text-muted mb-0">Gümrük Vergisi, İthalat ÖTV'si ve İthalat Harcı. 16 haneli tescil beyanname numarası ve GTİP kodu eklenir.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 p-3 border-light bg-light shadow-sm">
+                                    <h5 class="fw-bold text-secondary"><i class="fas fa-exchange-alt me-2"></i> Cari Hesap Ödemeleri</h5>
+                                    <p class="small text-muted mb-0">Satıcı veya müşterilere tek bir talimat metninde birden fazla satır ödeme girişi yapılmasını sağlar.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 p-3 border-light bg-light shadow-sm">
+                                    <h5 class="fw-bold text-warning"><i class="fas fa-coins me-2"></i> Döviz Alım / Satım</h5>
+                                    <p class="small text-muted mb-0">Alım veya Satım yönü seçilir. Döviz miktarı ve anlaşılan kur girildiğinde TL karşılığı anında hesaplanır.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="callout callout-info mt-3">
+                            <div class="callout-title"><i class="fas fa-check-circle"></i> Virman ve Cari Serbestisi İlkesi</div>
+                            Gönderici Firma bölümle kısıtlı iken, <strong>Alıcı Firma listesi serbesttir</strong>. Böylece Enerji şirketinden Tectone şirketine holding içi borç kapatma veya virman işlemi özgürce gerçekleştirilebilir.
+                        </div>
+                    </section>
+
+                    <!-- BÖLÜM 4: ÇIKTI VE İMZA SÜRECİ -->
+                    <section id="bolum-4" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-file-contract me-1"></i> Banka Formatı</span>
+                        <h2 class="section-heading">4. Talimat Çıktısı, Yazdırma ve Banka İmza Süreci</h2>
+                        <p>Talimat başarıyla oluşturulduğunda ekranın sağ tarafında resmi banka talimatı şablonu render edilir:</p>
+                        <ul>
+                            <li><strong>Resmi Banka Anteti:</strong> İlgili banka şubesine hitaben kurumsal talimat dili.</li>
+                            <li><strong>Tekil Numara ve Tarih:</strong> Sistemin otomatik olarak ürettiği sayaç numarası (Örn: <code>ENJ-2026-0045</code>).</li>
+                            <li><strong>Çift İmza Alanı:</strong> Şirket imza sirkülerine tam uyumlu <strong>1. Derece Yetkili</strong> ve <strong>2. Derece Yetkili</strong> imza kutuları.</li>
+                            <li><strong>Yazdırma ve PDF:</strong> <strong>"Talimatı Yazdır"</strong> butonuna basıldığında kurumsal antet ve kenar boşluklarıyla doğrudan yazdırma veya PDF kaydetme penceresi açılır.</li>
+                        </ul>
+                    </section>
+
+                    <!-- BÖLÜM 5: TALİMAT ARŞİVİ VE İZLEME -->
+                    <section id="bolum-5" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-database me-1"></i> Geçmiş Kayıtlar</span>
+                        <h2 class="section-heading">5. Talimat Arşivi ve İzleme</h2>
+                        <p>Sağ üstteki <strong>"Talimat Arşivi"</strong> butonundan erişilen arşiv sayfasında geçmişe dönük tüm kayıtlar filtrelenebilir:</p>
+                        
+                        <div class="row g-2 my-2">
+                            <div class="col-md-4">
+                                <div class="p-2 border rounded bg-light text-center small">
+                                    <span class="badge bg-success mb-1">✅ Aktif Talimat</span><br>
+                                    Yürürlükte olan, geçerli talimatlar.
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 border rounded bg-light text-center small">
+                                    <span class="badge bg-warning text-dark mb-1">🔄 Revize Edilmiş</span><br>
+                                    Hatalı olduğu için yenisiyle değiştirilen eski kayıtlar.
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 border rounded bg-light text-center small">
+                                    <span class="badge bg-danger mb-1">🚫 İptal Edilmiş</span><br>
+                                    Yetkili tarafından iptal edilen pasif kayıtlar.
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="mt-3">Görünüm tercihine göre <strong>Kart Görünümü</strong> veya geniş Excel benzeri <strong>Liste Görünümü</strong> arasında geçiş yapabilirsiniz.</p>
+                    </section>
+
+                    <!-- BÖLÜM 6: AKILLI REVİZYON (DÜZELTME) MEKANİZMASI -->
+                    <section id="bolum-6" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-history me-1"></i> Hata Düzeltme</span>
+                        <h2 class="section-heading">6. Akıllı Revizyon (Düzeltme) Mekanizması</h2>
+                        <p>Daha önce üretilmiş bir talimattaki tutar, açıklama veya banka bilgisini düzeltmek için sıfırdan form doldurmanıza gerek yoktur:</p>
+
+                        <div class="step-box">
+                            <span class="step-number">1</span> <strong>Arşivden Revizyon Başlatma:</strong>
+                            <p class="mb-0 mt-1 text-muted">Arşivdeki aktif talimatın altındaki <strong>"Revize Et"</strong> butonuna basınız.</p>
+                        </div>
+
+                        <div class="step-box">
+                            <span class="step-number">2</span> <strong>Sarı Revizyon Banner'ı:</strong>
+                            <p class="mb-0 mt-1 text-muted">Sistem form sayfasına döner ve sayfanın tepesinde <strong>"Akıllı Revizyon Modu Aktif"</strong> sarı banner'ını açar. Hangi talimat numarasını revize ettiğiniz vurgulanır.</p>
+                        </div>
+
+                        <div class="step-box">
+                            <span class="step-number">3</span> <strong>Otomatik Ön-Doldurma:</strong>
+                            <p class="mb-0 mt-1 text-muted">Gönderici/Alıcı firma, banka hesapları, IBAN, tutar ve açıklamalar forma otomatik olarak taşınır. Sadece düzeltmek istediğiniz alanı değiştirip formu kaydediniz.</p>
+                        </div>
+
+                        <div class="step-box">
+                            <span class="step-number">4</span> <strong>Denetim Zinciri:</strong>
+                            <p class="mb-0 mt-1 text-muted">Yeni talimat yeni bir numara alır ve detayında <em>"ENJ-2026-0005 nolu talimatın revizyonudur"</em> damgası bulunur. Eski talimat otomatik olarak <code>revize_edildi</code> durumuna geçer.</p>
+                        </div>
+                    </section>
+
+                    <!-- BÖLÜM 7: TALİMAT İPTALİ (SOFT DELETE) -->
+                    <section id="bolum-7" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-trash-restore me-1"></i> Denetim İzi</span>
+                        <h2 class="section-heading">7. Talimat İptali (Soft Delete ve Denetim İzi)</h2>
+                        <p>Finansal denetim (audit trail) gereğince, sistemdeki hiçbir talimat numarası veritabanından kalıcı olarak silinemez (hard delete yapılmaz):</p>
+                        <ul>
+                            <li>Arşiv sayfasında talimatın altındaki kırmızı <strong>"İptal Et"</strong> (<i class="fas fa-ban text-danger"></i>) butonuna basınız.</li>
+                            <li>Onay penceresinde iptal kararınızı onaylayınız.</li>
+                            <li>Talimat veritabanında saklanmaya devam eder, statüsü kırmızı <strong>İptal</strong> rozetine döner ve üzerinde işlem yapılması kilitlenir.</li>
+                        </ul>
+                    </section>
+
+                    <!-- BÖLÜM 8: SIKÇA SORULAN SORULAR -->
+                    <section id="bolum-8" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-question-circle me-1"></i> Çözüm Rehberi</span>
+                        <h2 class="section-heading">8. Sıkça Karşılaşılan Sorular ve Çözümler</h2>
+
+                        <div class="accordion mt-3" id="faqAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq1">
+                                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                        Gönderici firma listesinde aradığım holding firmasını bulamıyorum. Neden?
+                                    </button>
+                                </h2>
+                                <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Formun üstündeki <strong>"Talimat Bölümü (Zorunlu)"</strong> radyo butonunu kontrol ediniz. Eğer Tectone firması arıyorsanız ve ekranda <code>ENJ</code> seçili ise, katı izolasyon kuralları gereği TCT firmaları gizlenir. Butonu <code>TCT</code> olarak değiştiriniz.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq2">
+                                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                        "Bu talimat daha önce oluşturulmuş. Mükerrer kayıt yapılamaz" hatası nedir?
+                                    </button>
+                                </h2>
+                                <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Aynı gün içinde aynı gönderici, aynı alıcı, aynı tutar ve açıklamaya sahip mükerrer bir ödeme basılmasını engellemek için sistem güvenlik kilidi koymuştur. Açıklama kutusuna fatura no ekleyerek talimatı özelleştirebilirsiniz.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq3">
+                                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                        Revizyon esnasında bölümü (ENJ -> TCT) değiştirirsem numara ne olur?
+                                    </button>
+                                </h2>
+                                <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Sistem deterministik sayaç mimarisi kullanır. Bölümü değiştirdiğiniz anda yeni talimatınız TCT sayacının sıradaki boş numarasını (Örn: <code>TCT-2026-XXXX</code>) alır. Eski ENJ talimatı ise arşivde <code>revize_edildi</code> olarak saklanır; denetim zinciri kopmaz.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- BÖLÜM 9: DESTEK VE İLETİŞİM -->
+                    <section id="bolum-9" class="manual-section section-anchor">
+                        <span class="section-badge"><i class="fas fa-headset me-1"></i> Yardım Masası</span>
+                        <h2 class="section-heading">9. Destek ve Yetkilendirme</h2>
+                        <p>Kullanıcı tanımlamaları, şifre sıfırlama veya yeni şirket yetkilendirmeleri için Finans Bilgi İşlem Masası ile irtibata geçebilirsiniz:</p>
+                        <ul>
+                            <li><strong>E-Posta:</strong> <code>finans@canholding.com.tr</code> / <code>canholdingfinans@gmail.com</code></li>
+                            <li><strong>Yetkili Birim:</strong> Can Holding Finans Direktörlüğü & Sistem Yönetimi</li>
+                        </ul>
+                    </section>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Active link tracking on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.section-anchor');
+            const navLinks = document.querySelectorAll('.nav-manual-link');
+            let current = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 110;
+                if (pageYOffset >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
