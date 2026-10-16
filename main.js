@@ -360,6 +360,9 @@ async function loadUserDepartments() {
 
     if (mainContent) mainContent.style.pointerEvents = 'auto';
     if (mainContent) mainContent.style.opacity = '1';
+
+    // Dispatch departmentChanged so initial dropdowns filter correctly based on default department
+    window.dispatchEvent(new CustomEvent('departmentChanged'));
 }
 
 /**

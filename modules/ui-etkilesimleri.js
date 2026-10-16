@@ -396,7 +396,22 @@ const setupEventListeners = () => {
     });
     
     // Department changed event
-    window.addEventListener('departmentChanged', populateFormDropdowns);
+    window.addEventListener('departmentChanged', () => {
+        populateFormDropdowns();
+
+        // Clear sender bank select & bank details to prevent stale state across departments
+        const senderBankSelects = ['gondericiBanka', 'vergiGondericiBanka', 'sgkGondericiBanka', 'gumrukGondericiBanka'];
+        senderBankSelects.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '<option value="">Önce Firma Seçiniz</option>';
+        });
+
+        const senderBankDetails = ['gondericiBankaDetay', 'vergiGondericiBankaDetay', 'sgkGondericiBankaDetay', 'gumrukGondericiBankaDetay'];
+        senderBankDetails.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '';
+        });
+    });
 
     // Form events
     const firmaForm = document.getElementById('firmaForm');
@@ -1921,13 +1936,14 @@ const populateFormDropdowns = () => {
 
             // Get current selected department
             const currentDeptNode = document.querySelector('input[name="department_prefix"]:checked') || document.querySelector('input[type="hidden"][name="department_prefix"]');
-            const aktifBolum = currentDeptNode ? currentDeptNode.value : null;
+            const aktifBolum = currentDeptNode ? currentDeptNode.value.trim().toUpperCase() : null;
 
             // Gönderici kısıtlı (katı izolasyon), Alıcı serbest (virman izni)
             if (aktifBolum && selectId !== 'aliciFirma') {
-                filteredFirmalar = filteredFirmalar.filter(firma => 
-                    !firma.department || firma.department === 'ORTAK' || firma.department === aktifBolum
-                );
+                filteredFirmalar = filteredFirmalar.filter(firma => {
+                    const firmaDept = (firma.department || '').trim().toUpperCase();
+                    return firmaDept === aktifBolum;
+                });
             }
             
             filteredFirmalar.forEach(firma => {
